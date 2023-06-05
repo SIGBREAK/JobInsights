@@ -1,3 +1,4 @@
 /requests
 .idea/
 venv/
+__pycache__/
