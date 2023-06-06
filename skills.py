@@ -16,9 +16,9 @@ def create_bar_chart(wb, chart_name, vacancy_name, n):
     chart = wb.add_chart({'type': 'bar'})
     chartsheet.set_chart(chart)
 
-    chart.add_series({'name': '=Skills_data!$B$1',
-                      'categories': f'=Skills_data!A2:A{n + 1}',
-                      'values': f'=Skills_data!B2:B{n + 1}'})
+    chart.add_series({'name': '=Навыки_табл!$B$1',
+                      'categories': f'=Навыки_табл!A2:A{n + 1}',
+                      'values': f'=Навыки_табл!B2:B{n + 1}'})
 
     chart.set_title({'name': f'Топ-{n} навыков: {vacancy_name}'})
     chart.set_x_axis({'name': 'Частота'})

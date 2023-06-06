@@ -1,5 +1,6 @@
-from os import path, mkdir
 import xlsxwriter
+
+from os import path, mkdir
 from string import ascii_uppercase
 
 

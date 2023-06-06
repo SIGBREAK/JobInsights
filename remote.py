@@ -9,8 +9,8 @@ def create_pie_chart(wb, chart_name, vacancy_name):
     chartsheet.set_chart(chart)
 
     chart.add_series(
-        {"categories": '=Remote_data!A1:A2',
-         "values": '=Remote_data!B1:B2'})
+        {"categories": '=Удалёнка_табл!A1:A2',
+         "values": '=Удалёнка_табл!B1:B2'})
 
     chart.set_title({"name": f"Формат работы: {vacancy_name}"})
     chart.set_style(10)

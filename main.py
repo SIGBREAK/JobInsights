@@ -1,8 +1,9 @@
+import remote
+import salary
+import skills
+
 from formatter import *
 from parser import parse_page, get_schedule
-import skills as s
-from salary import write_salary_statistics, create_column_chart
-import remote as r
 
 # Ввод пользовательских значений
 pages_number = 1
@@ -15,10 +16,10 @@ path = get_path()
 wb_1 = CustomWorkbook(path, my_request)
 
 # Создание листов
-ws_1 = wb_1.add_worksheet('All_vacancies_data')
-ws_2 = wb_1.add_worksheet('Skills_data')
-ws_3 = wb_1.add_worksheet('Salary_data')
-ws_4 = wb_1.add_worksheet('Remote_data')
+ws_1 = wb_1.add_worksheet('Вакансии')
+ws_2 = wb_1.add_worksheet('Навыки_табл')
+ws_3 = wb_1.add_worksheet('Зарплата_табл')
+ws_4 = wb_1.add_worksheet('Удалёнка_табл')
 
 # Таблицы 2,3,4 - вспомогательные и должны быть скрыты
 ws_2.hide()
@@ -39,17 +40,16 @@ cut_unused_cells(ws_1, col=9)
 parse_page(my_request, pages_number, write_to=ws_1)
 
 # Создание диаграммы требуемых навыков
-add_headlines(ws_2, ['Навык', 'Частота'])
-s.write_skills(ws_2, skills_number)
-s.create_bar_chart(wb_1, 'Skills_chart', my_request, skills_number)
+skills.write_skills(ws_2, skills_number)
+skills.create_bar_chart(wb_1, 'Навыки', my_request, skills_number)
 
 # Создание диаграммы уровня заработной платы
-write_salary_statistics(ws_3)
-create_column_chart(wb_1, 'Salary_chart', my_request)
+salary.write_salary_statistics(ws_3)
+salary.create_column_chart(wb_1, 'Зарплата', my_request)
 
 # Создание диаграммы формата работы
-r.write_schedule_data(ws_4, *get_schedule())
-r.create_pie_chart(wb_1, 'Remote_chart', my_request)
+remote.write_schedule_data(ws_4, *get_schedule())
+remote.create_pie_chart(wb_1, 'Удалёнка', my_request)
 
 # Закрытие файла
 wb_1.close()

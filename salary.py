@@ -1,6 +1,7 @@
 from parser import salaries_list
 from statistics import mean, median, mode
 
+
 functions = {'Минимальная': min,
              'Медианная': median,
              'Средняя': mean,
@@ -26,7 +27,7 @@ def create_column_chart(wb, chart_name, vacancy_name):
     chart = wb.add_chart({"type": "column"})
     chartsheet.set_chart(chart)
 
-    chart.add_series({'categories': '=Salary_data!A2:A6',
-                      'values': '=Salary_data!B2:B6'})
+    chart.add_series({'categories': '=Зарплата_табл!A2:A6',
+                      'values': '=Зарплата_табл!B2:B6'})
 
     chart.set_title({'name': f'Показатели зарплаты: {vacancy_name}'})
