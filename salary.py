@@ -1,4 +1,4 @@
-from parser_hh import salaries_list
+from parser import salaries_list
 from statistics import mean, median, mode
 
 functions = {'Минимальная': min,

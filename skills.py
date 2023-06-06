@@ -1,5 +1,5 @@
 from collections import Counter
-from parser_hh import skills_list
+from parser import skills_list
 
 
 def write_skills(ws, n):

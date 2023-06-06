@@ -3,48 +3,35 @@ import xlsxwriter
 from string import ascii_uppercase
 
 
+class CustomWorkbook(xlsxwriter.Workbook):
+    def __init__(self, f_path, my_request):
+        super().__init__(rf'{f_path}GET_{my_request}.xlsx', {'constant_memory': True})
+
+    def add_cells_formatting(self):
+        headlines_format = self.add_format({'bold': True,
+                                            'font_size': 13,
+                                            'align': 'center',
+                                            'font_name': 'Times New Roman',
+                                            'text_wrap': True})
+        headlines_format.set_align('vcenter')
+        string_format = self.add_format({'font_size': 11,
+                                        'font_name': 'Times New Roman'})
+        numbers_format = self.add_format({'align': 'center',
+                                          'font_size': 11,
+                                          'num_format': '# ### ###',
+                                          'font_name': 'Times New Roman'})
+        days_format = self.add_format({'align': 'center',
+                                       'font_size': 11,
+                                       'num_format': 1,
+                                       'font_name': 'Times New Roman'})
+        return headlines_format, string_format, numbers_format, days_format
+
+
 def get_path():
     directory = r'../Мои запросы/'
     if not path.exists(directory):
         mkdir(directory)
     return directory
-
-
-def create_excel(f_path, my_request):
-    return xlsxwriter.Workbook(rf'{f_path}GET_{my_request}.xlsx',
-                               {'constant_memory': True})
-
-
-def create_worksheet(wb, name):
-    return wb.add_worksheet(name)
-
-
-def add_cells_formatting(wb):
-    headlines_format = wb.add_format({'bold': True,
-                                      'font_size': 13,
-                                      'align': 'center',
-                                      'font_name': 'Times New Roman',
-                                      'text_wrap': True})
-    headlines_format.set_align('vcenter')
-
-    string_format = wb.add_format({'font_size': 11,
-                                   'font_name': 'Times New Roman'})
-
-    numbers_format = wb.add_format({'align': 'center',
-                                    'font_size': 11,
-                                    'num_format': '# ### ###',
-                                    'font_name': 'Times New Roman'})
-
-    days_format = wb.add_format({'align': 'center',
-                                 'font_size': 11,
-                                 'num_format': 1,
-                                 'font_name': 'Times New Roman'})
-
-    return headlines_format, string_format, numbers_format, days_format
-
-
-def close(wb):
-    wb.close()
 
 
 def add_headlines(ws, headings, format=None):
@@ -77,10 +64,6 @@ def set_cell_formats(ws, strings, numbers, days):
     ws.set_column('G:G', 11, days)
     ws.set_column('H:H', 38, strings)
     ws.set_column('I:I', 40, strings)
-
-
-def freeze_first_row(ws):
-    ws.freeze_panes(1, 0)
 
 
 def cut_unused_cells(ws, col):
