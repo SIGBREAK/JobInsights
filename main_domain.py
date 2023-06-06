@@ -5,9 +5,9 @@ from salary_data import write_salary_statistics, create_column_chart
 import remote_chart as r
 
 # Ввод пользовательских значений
-pages_number = 1
+pages_number = 10
 skills_number = 20
-my_request = 'Водитель'
+my_request = 'Python Developer'
 
 
 # Создание Excel и предварительное форматирование

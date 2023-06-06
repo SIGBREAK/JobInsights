@@ -94,8 +94,8 @@ def parse_page(request, pages, write_to):
         # print(f'Будет проанализировано {res} вакансий')
 
         for v, item in enumerate(json_obj['items'], 1):
-            if v > 15:
-                break
+            # if v > 15:
+            #     break
             with requests.get(item['url']) as req:
                 vacancy = Vacancy(req.json())
                 vacancy.write_all_data(write_to)
