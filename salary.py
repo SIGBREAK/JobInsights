@@ -3,11 +3,9 @@ from statistics import mean, median, mode
 
 
 def write_salary_statistics(ws, data=None):
-    functions = {'Минимальная': min,
-                 'Медианная': median,
+    functions = {'Медианная': median,
                  'Средняя': mean,
-                 'Модальная': mode,
-                 'Максимальная': max}
+                 'Модальная': mode}
 
     if not data:
         data = salaries_list
@@ -17,6 +15,9 @@ def write_salary_statistics(ws, data=None):
 
     for row, f_name in enumerate(functions, 2):
         ws.write_row(f'A{row}', (f_name, int(functions[f_name](data))))
+
+    ws.write_row('A5', ('Минимальная', '=MIN(Вакансии!B:B, Вакансии!C:C)'))
+    ws.write_row('A6', ('Максимальная', '=MAX(Вакансии!B:B, Вакансии!C:C)'))
 
 
 def create_column_chart(wb, chart_name, vacancy_name):

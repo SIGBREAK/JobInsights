@@ -2,7 +2,6 @@ import time
 import requests
 
 from datetime import datetime, date
-from itertools import count
 from re import search
 from statistics import mean
 
@@ -11,9 +10,12 @@ rates = {'RUR': 1, 'USD': 81, 'EUR': 89}
 
 
 class Vacancy:
-    max_row = count(2)  # Новая строка при записи каждого объекта в Excel файл
+    max_row = 2  # Новая строка при записи каждого объекта в Excel файл
 
     def __init__(self, job):
+        self.row = Vacancy.max_row
+        Vacancy.max_row += 1
+
         # Название вакансии
         self.name = job['name']
 
@@ -61,11 +63,7 @@ class Vacancy:
         return (date.today() - published.date()).days
 
     def write_all_data(self, worksheet):
-        row = next(Vacancy.max_row)
-        worksheet.write(f'A{row}', self.name)
-        worksheet.write_row(f'B{row}', [self.salary_from, self.salary_to, self.years_of_experience, self.is_remote])
-        worksheet.write_row(f'F{row}', [self.days_since_published, self.days_since_created])
-        worksheet.write_row(f'H{row}', [self.employer_name, self.url])
+        worksheet.write_row(f'A{self.row}', list(self.__dict__.values())[1:-1])
 
     def collect_salary_data(self):
         if self.salary_from or self.salary_to:
