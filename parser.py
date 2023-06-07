@@ -2,14 +2,16 @@ import time
 import requests
 
 from datetime import datetime, date
-from re import search
 from itertools import count
+from re import search
+from statistics import mean
+
+
+rates = {'RUR': 1, 'USD': 81, 'EUR': 89}
 
 
 class Vacancy:
-    rates = {'RUR': 1, 'USD': 81, 'EUR': 89}
     max_row = count(2)  # Новая строка при записи каждого объекта в Excel файл
-    today_date = date.today()
 
     def __init__(self, job):
         # Название вакансии
@@ -50,13 +52,13 @@ class Vacancy:
         bottom, top, currency = salary['from'], salary['to'], salary['currency']
 
         def calculate_salary(bound):
-            return int(k * bound * cls.rates[currency]) if bound else ''
+            return int(k * bound * rates[currency]) if bound else ''
         return calculate_salary(bottom), calculate_salary(top)
 
     @classmethod
     def __find_timedelta(cls, date_obj):
         published = datetime.strptime(date_obj, '%Y-%m-%dT%H:%M:%S%z')
-        return (cls.today_date - published.date()).days
+        return (date.today() - published.date()).days
 
     def write_all_data(self, worksheet):
         row = next(Vacancy.max_row)
@@ -67,8 +69,8 @@ class Vacancy:
 
     def collect_salary_data(self):
         if self.salary_from or self.salary_to:
-            wages_data = list(filter(None, [self.salary_from, self.salary_to]))
-            salaries_list.append(sum(wages_data) / len(wages_data))
+            salary_tuple = tuple(filter(None, [self.salary_from, self.salary_to]))
+            salaries_list.append(mean(salary_tuple))
 
 
 skills_list = []
@@ -85,21 +87,19 @@ def get_page(my_request, page=0):
         return r.json()
 
 
-def parse_page(request, pages, write_to):
+def parse_page(request, pages, sheet):
     for p in range(pages):
         json_obj = get_page(request, p)
+        print(f"По запросу '{request}' всего найдено {json_obj['found']} вакансий.")
         if not json_obj['items']:
             break
 
-        # res = min(json_obj['found'], json_obj['per_page'] * pages)
-        # print(f'Будет проанализировано {res} вакансий')
-
         for v, item in enumerate(json_obj['items'], 1):
-            # if v > 15:
-            #     break
-            with requests.get(item['url']) as req:
-                vacancy = Vacancy(req.json())
-                vacancy.write_all_data(write_to)
+            if v > 15:
+                break
+            with requests.get(item['url']) as request:
+                vacancy = Vacancy(request.json())
+                vacancy.write_all_data(sheet)
                 vacancy.collect_salary_data()
                 skills_list.extend(vacancy.skills)
 

@@ -1,12 +1,11 @@
-import xlsxwriter
-
 from os import path, mkdir
 from string import ascii_uppercase
+from xlsxwriter import Workbook
 
 
-class CustomWorkbook(xlsxwriter.Workbook):
+class CustomWorkbook(Workbook):
     def __init__(self, f_path, my_request):
-        super().__init__(rf'{f_path}GET_{my_request}.xlsx', {'constant_memory': True})
+        super().__init__(rf'{f_path}{my_request}.xlsx', {'constant_memory': True})
 
     def add_cells_formatting(self):
         headlines_format = self.add_format({'bold': True,
@@ -14,17 +13,22 @@ class CustomWorkbook(xlsxwriter.Workbook):
                                             'align': 'center',
                                             'font_name': 'Times New Roman',
                                             'text_wrap': True})
-        headlines_format.set_align('vcenter')
+
         string_format = self.add_format({'font_size': 11,
                                         'font_name': 'Times New Roman'})
+
         numbers_format = self.add_format({'align': 'center',
                                           'font_size': 11,
                                           'num_format': '# ### ###',
                                           'font_name': 'Times New Roman'})
+
         days_format = self.add_format({'align': 'center',
                                        'font_size': 11,
                                        'num_format': 1,
                                        'font_name': 'Times New Roman'})
+
+        headlines_format.set_align('vcenter')
+
         return headlines_format, string_format, numbers_format, days_format
 
 
@@ -35,11 +39,8 @@ def get_path():
     return directory
 
 
-def add_headlines(ws, headings, format=None):
-    if not format:
-        ws.write_row('A1', headings)
-    else:
-        ws.write_row('A1', headings, format)
+def add_headlines(ws, headings, headings_format):
+    ws.write_row('A1', headings, headings_format)
 
 
 def add_conditional_formatting(ws):

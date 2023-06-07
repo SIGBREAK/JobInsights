@@ -1,4 +1,4 @@
-def write_schedule_data(ws, remote, total):
+def write_remote_data(ws, remote, total):
     ws.write_row("A1", ("Удалёнка", remote))
     ws.write_row("A2", ("Офис", total - remote))
 
