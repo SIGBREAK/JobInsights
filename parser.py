@@ -75,7 +75,6 @@ class Vacancy:
 
 skills_list = []
 salaries_list = []
-total = remote = 0
 
 
 def get_page(my_request, page=0):
@@ -95,7 +94,7 @@ def parse_page(request, pages, sheet):
             break
 
         for v, item in enumerate(json_obj['items'], 1):
-            if v > 15:
+            if v > 20:
                 break
             with requests.get(item['url']) as request:
                 vacancy = Vacancy(request.json())
@@ -103,16 +102,7 @@ def parse_page(request, pages, sheet):
                 vacancy.collect_salary_data()
                 skills_list.extend(vacancy.skills)
 
-            global remote, total
-            if vacancy.is_remote:
-                remote += 1
-            total += 1
-
             print(f'Записаны данные: страница {p + 1}, вакансия {v}.')
             time.sleep(0.35)  # обход бана от API hh.ru
         print(f'Пройдена страница: {p + 1}.')
         time.sleep(5)
-
-
-def get_schedule():
-    return remote, total

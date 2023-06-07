@@ -1,6 +1,9 @@
-def write_remote_data(ws, remote, total):
-    ws.write_row("A1", ("Удалёнка", remote))
-    ws.write_row("A2", ("Офис", total - remote))
+def write_remote_data(ws):
+    ws.write('A1', 'Удалёнка')
+    ws.write_formula('B1', f'=SUM(Вакансии!E:E)')
+
+    ws.write('A2', 'Офис')
+    ws.write_formula('B2', f'=COUNTA(Вакансии!E:E) - SUM(Вакансии!E:E) - 1')
 
 
 def create_pie_chart(wb, chart_name, vacancy_name):

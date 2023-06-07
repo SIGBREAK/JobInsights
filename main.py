@@ -3,7 +3,7 @@ import salary
 import skills
 
 from formatter import *
-from parser import parse_page, get_schedule
+from parser import parse_page
 
 
 # Ввод пользовательских значений
@@ -48,7 +48,7 @@ salary.write_salary_statistics(ws_3)
 salary.create_column_chart(wb_1, 'Зарплата', my_request)
 
 # Создание диаграммы формата работы
-remote.write_remote_data(ws_4, *get_schedule())
+remote.write_remote_data(ws_4)
 remote.create_pie_chart(wb_1, 'Удалёнка', my_request)
 
 # Закрытие файла
