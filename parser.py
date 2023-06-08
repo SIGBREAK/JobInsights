@@ -92,8 +92,8 @@ def parse_page(request, pages, sheet):
             break
 
         for v, item in enumerate(json_obj['items'], 1):
-            if v > 20:
-                break
+            # if v > 10:
+            #     break
             with requests.get(item['url']) as request:
                 vacancy = Vacancy(request.json())
                 vacancy.write_all_data(sheet)

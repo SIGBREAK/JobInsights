@@ -11,9 +11,24 @@ def create_pie_chart(wb, chart_name, vacancy_name):
     chart = wb.add_chart({"type": "pie"})
     chartsheet.set_chart(chart)
 
-    chart.add_series(
-        {"categories": '=Удалёнка_табл!A1:A2',
-         "values": '=Удалёнка_табл!B1:B2'})
+    labels_options = {'percentage': True,
+                      'font': {'name': 'Arial',
+                               'size': 14,
+                               'bold': True,
+                               'color': 'white'},
+                      'position': 'center'}
 
-    chart.set_title({"name": f"Формат работы: {vacancy_name}"})
-    chart.set_style(10)
+    pie_chart_colors = [{"fill": {"color": "#00B0F0"}},
+                        {"fill": {"color": "#17375E"}}]
+
+    title_font = {'name': 'Times New Roman', 'size': 17}
+
+    chart.add_series({"categories": '=Удалёнка_табл!A1:A2',
+                      "values": '=Удалёнка_табл!B1:B2',
+                      'data_labels': labels_options,
+                      "points": pie_chart_colors})
+
+    chart.set_title({"name": f"Формат работы: {vacancy_name}",
+                     'name_font': title_font})
+
+    chart.set_legend({'position': 'top'})

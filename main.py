@@ -9,7 +9,7 @@ from parser import parse_page
 # Ввод пользовательских значений
 pages_number = 1
 skills_number = 20
-my_request = 'Разработчик'
+my_request = 'Разработчик C++'
 
 # Создание файла Excel
 path = get_path()

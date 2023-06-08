@@ -25,7 +25,31 @@ def create_column_chart(wb, chart_name, vacancy_name):
     chart = wb.add_chart({"type": "column"})
     chartsheet.set_chart(chart)
 
-    chart.add_series({'categories': '=Зарплата_табл!A2:A6',
-                      'values': '=Зарплата_табл!B2:B6'})
+    labels_options = {'value': True,
+                      'font': {'name': 'Arial',
+                               'size': 12,
+                               'bold': True,
+                               'color': 'white'},
+                      'position': 'inside_end',
+                      'num_format': '# ### ### ₽'}
 
-    chart.set_title({'name': f'Показатели зарплаты: {vacancy_name}'})
+    axis_font = {'name': 'Times New Roman', 'size': 12}
+    title_font = {'name': 'Times New Roman', 'size': 17}
+
+    chart.add_series({'categories': '=Зарплата_табл!A2:A6',
+                      'values': '=Зарплата_табл!B2:B6',
+                      'data_labels': labels_options,
+                      'fill': {'color': 'blue'},
+                      'gradient': {'colors': ['#17375E', '#00B0F0'],
+                                   'angle': 90},
+                      'gap': 40})
+
+    chart.set_x_axis({'num_font': axis_font})
+
+    chart.set_y_axis({'num_format': '# ### ###',
+                      'num_font': axis_font})
+
+    chart.set_title({'name': f'Показатели зарплаты: {vacancy_name}',
+                     'name_font': title_font})
+
+    chart.set_legend({'none': True})

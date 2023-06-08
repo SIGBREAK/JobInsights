@@ -15,21 +15,28 @@ def create_bar_chart(wb, chart_name, vacancy_name, n):
     chart = wb.add_chart({'type': 'bar'})
     chartsheet.set_chart(chart)
 
-    chart.add_series({'name': '=Навыки_табл!$B$1',
-                      'categories': f'=Навыки_табл!A1:A{n}',
+    labels_options = {'value': True,
+                      'font': {'italic': True}}
+
+    axis_font = {'name': 'Times New Roman', 'size': 12}
+    title_font = {'name': 'Times New Roman', 'size': 17}
+
+    chart.add_series({'categories': f'=Навыки_табл!A1:A{n}',
                       'values': f'=Навыки_табл!B1:B{n}',
-                      'data_labels': {'value': True},
+                      'data_labels': labels_options,
                       'fill': {'color': 'blue'},
-                      'gradient': {'colors': ['#99CCFF', '#0066FF'], 'angle': 45}
-                      })
+                      'gradient': {'colors': ['#22518A', '#00C0F0'],
+                                   'angle': 180},
+                      'gap': 80})
 
     chart.set_title({'name': f'Топ-{n} навыков: {vacancy_name}',
-                     'font': {'size': 15}})
+                     'name_font': title_font})
 
     chart.set_x_axis({'name': 'Частота',
-                      'name_font': {'size': 12, 'name': 'Times New Roman', 'bold': False},
-                      'num_format': '# ###', 'num_font': {'size': 12, 'name': 'Times New Roman'}})
+                      'name_font': axis_font,
+                      'num_format': '# ###',
+                      'num_font': axis_font})
 
-    chart.set_y_axis({'num_font': {'size': 12, 'name': 'Times New Roman'}})
+    chart.set_y_axis({'num_font': axis_font})
 
     chart.set_legend({'none': True})
