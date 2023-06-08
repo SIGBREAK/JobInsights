@@ -75,19 +75,50 @@ skills_list = []
 salaries_list = []
 
 
-def get_page(my_request, page=0):
+def init_areas_dict():
+    """
+    Функция вызывается в момент запуска программы и собирает данные о городах (id: название города),
+    что позволяет не привязываться к айдишникам, которые могут быть изменены в API hh.ru.
+    """
+
+    with requests.get('https://api.hh.ru/areas') as r:
+        json_obj = r.json()
+
+    areas = {}
+    for country in filter(lambda item: item['name'] == 'Россия', json_obj):
+        areas[country['id']] = country['name']
+        for region in country['areas']:
+            areas[region['id']] = region['name']
+            for area in region['areas']:
+                areas[area['id']] = area['name']
+
+    return dict(sorted(areas.items(), key=lambda tpl: int(tpl[0])))
+
+
+def get_my_area_id(my_region, areas):
+    """
+    Функция позволяет получить текущий (согласно API hh.ru) айдишник заданного региона.
+    Предварительно должен быть сформирован словарь актуальными айдишниками для регионов.
+    """
+    for area_id, name_area in areas.items():
+        if name_area.lower() == my_region.lower():
+            return int(area_id)
+
+
+def get_page(my_request, my_area_id, page=0):
     params = {'text': f'{my_request}',
-              'area': 1,
+              'area': my_area_id,
               'page': page,
               'per_page': 100}
     with requests.get('https://api.hh.ru/vacancies', params) as r:
         return r.json()
 
 
-def parse_page(request, pages, sheet):
+def parse_page(request, my_area_id, pages, sheet):
     for p in range(pages):
-        json_obj = get_page(request, p)
-        print(f"По запросу '{request}' всего найдено {json_obj['found']} вакансий.")
+        json_obj = get_page(request, my_area_id, p)
+        if p == 0:
+            print(f"По запросу '{request}' всего найдено {json_obj['found']} вакансий.")
         if not json_obj['items']:
             break
 

@@ -3,12 +3,16 @@ import salary
 import skills
 
 from formatter import *
-from parser import parse_page
+from parser import parse_page, init_areas_dict, get_my_area_id
 
 
 # Ввод пользовательских значений
 pages_number = 1
 my_request = 'Разработчик C++'
+my_region = 'Саратов'
+
+areas_dict = init_areas_dict()
+my_area_id = get_my_area_id(my_region, areas_dict)
 
 # Создание файла Excel
 path = get_path()
@@ -36,7 +40,7 @@ ws_1.freeze_panes(1, 0)
 cut_unused_cells(ws_1, col=9)
 
 # Запись данных о вакансиях в таблицу
-parse_page(my_request, pages_number, sheet=ws_1)
+parse_page(my_request, my_area_id, pages_number, sheet=ws_1)
 
 # Создание диаграммы требуемых навыков
 skills.write_skills(ws_2)

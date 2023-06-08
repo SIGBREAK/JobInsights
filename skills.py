@@ -18,7 +18,7 @@ def create_bar_chart(wb, chart_name, vacancy_name):
     labels_options = {'value': True,
                       'font': {'italic': True}}
 
-    axis_font = {'name': 'Times New Roman', 'size': 12}
+    axis_font = {'name': 'Times New Roman', 'size': 12, 'bold': False}
     title_font = {'name': 'Times New Roman', 'size': 17}
 
     chart.add_series({'categories': f'=Навыки_табл!A1:A20',
