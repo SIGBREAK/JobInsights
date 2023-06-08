@@ -8,7 +8,6 @@ from parser import parse_page
 
 # Ввод пользовательских значений
 pages_number = 1
-skills_number = 20
 my_request = 'Разработчик C++'
 
 # Создание файла Excel
@@ -40,8 +39,8 @@ cut_unused_cells(ws_1, col=9)
 parse_page(my_request, pages_number, sheet=ws_1)
 
 # Создание диаграммы требуемых навыков
-skills.write_skills(ws_2, skills_number)
-skills.create_bar_chart(wb_1, 'Навыки', my_request, skills_number)
+skills.write_skills(ws_2)
+skills.create_bar_chart(wb_1, 'Навыки', my_request)
 
 # Создание диаграммы уровня заработной платы
 salary.write_salary_statistics(ws_3)
