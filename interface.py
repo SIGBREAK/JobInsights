@@ -4,9 +4,10 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QLineEdit, QCompleter,
 from PyQt5.QtGui import QPalette, QColor, QFont
 
 
-class ParserInterface(QWidget):
+class MainWindow(QWidget):
     def __init__(self, class_worker, object_parser):
         super().__init__()
+        self.worker = None
         self._class_worker = class_worker
         self._object_parser = object_parser
         self._areas_dict = self._object_parser.init_areas_dict()
@@ -70,7 +71,7 @@ class ParserInterface(QWidget):
     def update_pages_number(self, value):
         self.pages_display.setText(f'Число страниц поиска: {value}')
 
-    def update_progress_bar(self, value):
+    def updateProgressBar(self, value):
         self.progress_bar.setValue(value)
 
     def searching_completed(self):
@@ -102,6 +103,7 @@ class ParserInterface(QWidget):
         self.pages_slider.setEnabled(False)
         self.stop_button.setEnabled(True)
         self.status_label.setText(f"Статус: Идёт поиск.\nПо запросу найдено {vacancies['found']} вакансий.")
-        self.worker = self._class_worker(my_request, my_region, pages_number, self._areas_dict, self._object_parser, self)
-        self.worker.finished.connect(self.searching_completed)
+        self.worker = self._class_worker(my_request, my_region, pages_number, self._areas_dict, self._object_parser)
+        self.worker.progressUpdated.connect(self.updateProgressBar)
+        self.worker.taskFinished.connect(self.searching_completed)
         self.worker.start()

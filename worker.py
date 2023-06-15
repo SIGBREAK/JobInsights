@@ -3,18 +3,20 @@ import salary
 import skills
 
 from formatter import *
-from PyQt5.QtCore import QThread
+from PyQt5.QtCore import QThread, pyqtSignal
 
 
 class FileWorker(QThread):
-    def __init__(self, request, region, pages, areas_dict, object_parser, my_app):
+    progressUpdated = pyqtSignal(int)
+    taskFinished = pyqtSignal()
+
+    def __init__(self, request, region, pages, areas_dict, object_parser):
         super().__init__()
         self.my_request = request
         self.my_region = region
         self.pages_number = pages
         self._areas_dict = areas_dict
         self._parser = object_parser
-        self.my_app = my_app
 
     def run(self):
         my_area_id = self._parser.get_my_area_id(self.my_region, self._areas_dict)
@@ -45,7 +47,7 @@ class FileWorker(QThread):
         cut_unused_cells(ws_1, col=9)
 
         # Запись данных о вакансиях в таблицу
-        self._parser.parse_page(self.my_request, my_area_id, self.pages_number, ws_1, self.my_app)
+        self._parser.parse_page(self.my_request, my_area_id, self.pages_number, ws_1, self)
 
         # Создание диаграммы требуемых навыков
         skills.write_skills(ws_2, self._parser)
@@ -62,3 +64,4 @@ class FileWorker(QThread):
         # Закрытие файла
         wb_1.close()
         print('Файл закрыт')
+        self.taskFinished.emit()

@@ -59,9 +59,9 @@ class Parser:
     def stop_searching(self):
         self.stop_search = True
 
-    def parse_page(self, my_request, my_area_id, pages, sheet, app):
-        # total = min(self.get_page(my_request, my_area_id)['found'], pages * 100)
-        # counter = count(1)
+    def parse_page(self, my_request, my_area_id, pages, sheet, worker_object):
+        total = min(self.get_page(my_request, my_area_id)['found'], pages * 100)
+        counter = count(1)
 
         for p in range(pages):
             json_obj = self.get_page(my_request, my_area_id, p)
@@ -78,7 +78,7 @@ class Parser:
                     self.stop_search = False
                     return
 
-                # app.update_progress_bar(int(100 * next(counter) / total))
+                worker_object.progressUpdated.emit(int(100 * next(counter) / total))
 
                 with requests.get(item['url']) as req:
                     vacancy = Vacancy(req.json())

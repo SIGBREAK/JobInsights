@@ -2,7 +2,7 @@ from datetime import datetime, date
 from re import search
 
 
-rates = {'RUR': 1, 'USD': 81, 'EUR': 89}
+rates = {'RUR': 1, 'USD': 81, 'EUR': 89, 'KZT': 0.18}
 
 
 class Vacancy:
