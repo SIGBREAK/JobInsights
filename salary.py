@@ -1,14 +1,13 @@
-from parser import salaries_list
 from statistics import mean, median, mode
 
 
-def write_salary_statistics(ws, data=None):
+def write_salary_statistics(ws, parser_object, data=None):
     functions = {'Медианная': median,
                  'Средняя': mean,
                  'Модальная': mode}
 
     if not data:
-        data = salaries_list
+        data = parser_object.salaries_list
 
     ws.set_column('A:A', 30)
     ws.write('A1', 'Зарплата')

@@ -1,10 +1,9 @@
-from parser import skills_list
 from collections import Counter
 
 
-def write_skills(ws):
+def write_skills(ws, parser_object):
     ws.set_column('A:A', 30)
-    skills_data = reversed(Counter(skills_list).most_common(20))
+    skills_data = reversed(Counter(parser_object.skills_list).most_common(20))
 
     for row, data in enumerate(skills_data, 1):
         ws.write_row(f'A{row}', data)
