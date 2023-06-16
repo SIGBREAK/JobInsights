@@ -1,7 +1,7 @@
-from PyQt5.QtCore import Qt, QThread
-from PyQt5.QtWidgets import (QApplication, QWidget, QLineEdit, QCompleter,
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import (QWidget, QLineEdit, QCompleter,
                              QPushButton, QStyle, QSlider, QLabel, QProgressBar)
-from PyQt5.QtGui import QPalette, QColor, QFont
 
 
 class MainWindow(QWidget):

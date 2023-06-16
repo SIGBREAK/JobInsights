@@ -1,9 +1,8 @@
-import time
-import requests
-
-from vacancy import Vacancy
+from time import sleep
+from requests import get
 from statistics import mean
 from itertools import count
+from .vacancy import Vacancy
 
 
 class Parser:
@@ -19,7 +18,7 @@ class Parser:
         что позволяет не привязываться к айдишникам, которые могут быть изменены в API hh.ru.
         """
 
-        with requests.get('https://api.hh.ru/areas') as r:
+        with get('https://api.hh.ru/areas') as r:
             json_obj = r.json()
 
         areas = {}
@@ -53,7 +52,7 @@ class Parser:
                   'area': my_area_id,
                   'page': page,
                   'per_page': 100}
-        with requests.get('https://api.hh.ru/vacancies', params) as r:
+        with get('https://api.hh.ru/vacancies', params) as r:
             return r.json()
 
     def stop_searching(self):
@@ -80,8 +79,8 @@ class Parser:
 
                 worker_object.progressUpdated.emit(int(100 * next(counter) / total))
 
-                with requests.get(item['url']) as req:
-                    vacancy = Vacancy(req.json())
+                with get(item['url']) as r:
+                    vacancy = Vacancy(r.json())
 
                     worker_object.progressText.emit(vacancy.name[:70])
 
@@ -90,6 +89,6 @@ class Parser:
                     self.skills_list.extend(vacancy.skills)
 
                 print(f'Записаны данные: страница {p + 1}, вакансия {n}.')
-                time.sleep(0.35)  # обход бана от API hh.ru
+                sleep(0.35)  # обход бана от API hh.ru
             print(f'Пройдена страница: {p + 1}.')
-            time.sleep(5)
+            sleep(5)

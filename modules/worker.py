@@ -1,9 +1,6 @@
-import remote
-import salary
-import skills
-
-from formatter import *
 from PyQt5.QtCore import QThread, pyqtSignal
+from . import remote, salary, skills
+from .formatter import *
 
 
 class FileWorker(QThread):
