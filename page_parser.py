@@ -82,6 +82,9 @@ class Parser:
 
                 with requests.get(item['url']) as req:
                     vacancy = Vacancy(req.json())
+
+                    worker_object.progressText.emit(vacancy.name[:70])
+
                     vacancy.write_all_data(sheet)
                     self.collect_salary_data(vacancy)
                     self.skills_list.extend(vacancy.skills)

@@ -8,6 +8,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 
 class FileWorker(QThread):
     progressUpdated = pyqtSignal(int)
+    progressText = pyqtSignal(str)
     taskFinished = pyqtSignal()
 
     def __init__(self, request, region, pages, areas_dict, object_parser):

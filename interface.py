@@ -63,6 +63,13 @@ class MainWindow(QWidget):
         self.progress_bar.setGeometry(10, 200, 480, 30)
         self.progress_bar.setMaximum(100)
 
+        # Названия вакансий, меняющиеся в шкале прогресса
+        self.vacancy_label = QLabel('', self)
+        self.vacancy_label.setGeometry(20, 200, 480, 30)
+        vacancy_font = QFont()
+        vacancy_font.setItalic(True)
+        self.vacancy_label.setFont(vacancy_font)
+
         # Связывание наших кнопок с функциями
         self.pages_slider.valueChanged.connect(self.update_pages_number)
         self.search_button.clicked.connect(self.search)
@@ -74,12 +81,16 @@ class MainWindow(QWidget):
     def updateProgressBar(self, value):
         self.progress_bar.setValue(value)
 
+    def update_progress_text(self, vacancy_name):
+        self.vacancy_label.setText(vacancy_name)
+
     def searching_completed(self):
         self.search_button.setEnabled(True)
         self.job_field.setEnabled(True)
         self.area_box.setEnabled(True)
         self.pages_slider.setEnabled(True)
         self.stop_button.setEnabled(False)
+        self.vacancy_label.setText('')
         self.progress_bar.setValue(0)
         self.status_label.setText(f'Статус: Файл создан.\nПоиск завершён.')
 
@@ -105,5 +116,6 @@ class MainWindow(QWidget):
         self.status_label.setText(f"Статус: Идёт поиск.\nПо запросу найдено {vacancies['found']} вакансий.")
         self.worker = self._class_worker(my_request, my_region, pages_number, self._areas_dict, self._object_parser)
         self.worker.progressUpdated.connect(self.updateProgressBar)
+        self.worker.progressText.connect(self.update_progress_text)
         self.worker.taskFinished.connect(self.searching_completed)
         self.worker.start()
