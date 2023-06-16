@@ -4,7 +4,7 @@ from .formatter import *
 
 
 class FileWorker(QThread):
-    progressUpdated = pyqtSignal(int)
+    progressStatus = pyqtSignal(int)
     progressText = pyqtSignal(str)
     taskFinished = pyqtSignal()
 
@@ -35,7 +35,7 @@ class FileWorker(QThread):
         ws_4.hide()
 
         # Форматирование результирующей таблицы
-        headlines = ['Должность', 'ЗП от (чист.),\nруб', 'ЗП до (чист.),\nруб', 'Минимум опыта\nлет ',
+        headlines = ['Должность', 'ЗП (на руки) от, ₽', 'ЗП (на руки) до, ₽', 'Минимум опыта\nлет ',
                      'Удалёнка', 'Опубликовано\n(дней)', 'Создано\n(дней)', 'Компания', 'Подробнее']
         headlines_format, string_format, numbers_format, days_format = wb_1.add_cells_formatting()
         add_headlines(ws_1, headlines, headlines_format)
@@ -61,5 +61,5 @@ class FileWorker(QThread):
 
         # Закрытие файла
         wb_1.close()
-        print('Файл закрыт')
+        print(f'Файл {self.my_request} закрыт.')
         self.taskFinished.emit()

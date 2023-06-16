@@ -54,7 +54,10 @@ def add_conditional_formatting(ws):
 
     ws.conditional_format('E2:E2000', {'type': 'icon_set',
                                        'icon_style': '3_symbols_circled',
-                                       'icons_only': True})
+                                       'icons_only': True,
+                                       'icons': [{'criteria': '>=', 'type': 'number', 'value': 1},
+                                                 {'criteria': '>', 'type': 'number', 'value': 0},
+                                                 {'criteria': '<=', 'type': 'number', 'value': 0}]})
 
 
 def set_cell_formats(ws, strings, numbers, days):

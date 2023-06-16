@@ -57,6 +57,7 @@ class MainWindow(QWidget):
         # Статус строка внизу справа
         self.status_label = QLabel('Статус: Ожидание', self)
         self.status_label.setGeometry(280, 150, 210, 45)
+        self.status_label.setAlignment(Qt.AlignRight)
 
         # Шкала прогресса поиска
         self.progress_bar = QProgressBar(self)
@@ -73,7 +74,7 @@ class MainWindow(QWidget):
         # Связывание наших кнопок с функциями
         self.pages_slider.valueChanged.connect(self.update_pages_number)
         self.search_button.clicked.connect(self.search)
-        self.stop_button.clicked.connect(self._object_parser.stop_searching)
+        self.stop_button.clicked.connect(self._object_parser.stop_parsing)
 
     def update_pages_number(self, value):
         self.pages_display.setText(f'Число страниц поиска: {value}')
@@ -101,9 +102,9 @@ class MainWindow(QWidget):
         my_area_id = self._object_parser.get_my_area_id(my_region, self._areas_dict)
 
         # Отсечка на создание треда при отсутствии вакансий/ запроса
-        vacancies = self._object_parser.get_page(my_request, my_area_id)
+        _, found = self._object_parser.get_page(my_request, my_area_id)
 
-        if not vacancies['found'] or not my_request:
+        if not found or not my_request:
             self.status_label.setText(f"Статус: Не найдено вакансий.")
             return
 
@@ -113,9 +114,9 @@ class MainWindow(QWidget):
         self.area_box.setEnabled(False)
         self.pages_slider.setEnabled(False)
         self.stop_button.setEnabled(True)
-        self.status_label.setText(f"Статус: Идёт поиск.\nПо запросу найдено {vacancies['found']} вакансий.")
+        self.status_label.setText(f"Статус: Идёт поиск.\nПо запросу найдено {found} вакансий.")
         self.worker = self._class_worker(my_request, my_region, pages_number, self._areas_dict, self._object_parser)
-        self.worker.progressUpdated.connect(self.updateProgressBar)
+        self.worker.progressStatus.connect(self.updateProgressBar)
         self.worker.progressText.connect(self.update_progress_text)
         self.worker.taskFinished.connect(self.searching_completed)
         self.worker.start()
