@@ -16,7 +16,7 @@ def write_salary_statistics(ws, parser_object, data=None):
         ws.write_row(f'A{row}', (f_name, int(functions[f_name](data))))
 
     ws.write_row('A5', ('Минимальная', '=MIN(Вакансии!B:B, Вакансии!C:C)'))
-    ws.write_row('A6', ('Максимальная', '=MAX(Вакансии!B:B, Вакансии!C:C)'))
+    ws.write_row('A6', ('Максимальная', '', '=MAX(Вакансии!B:B, Вакансии!C:C)'))
 
 
 def create_column_chart(wb, chart_name, vacancy_name):
@@ -32,7 +32,9 @@ def create_column_chart(wb, chart_name, vacancy_name):
                       'position': 'inside_end',
                       'num_format': '# ### ### ₽'}
 
-    axis_font = {'name': 'Times New Roman', 'size': 12}
+    axis_options = {'num_format': '# ### ###',
+                    'num_font': {'name': 'Times New Roman', 'size': 12}}
+
     title_font = {'name': 'Times New Roman', 'size': 17}
 
     chart.add_series({'categories': '=Зарплата_табл!A2:A6',
@@ -43,10 +45,19 @@ def create_column_chart(wb, chart_name, vacancy_name):
                                    'angle': 90},
                       'gap': 40})
 
-    chart.set_x_axis({'num_font': axis_font})
+    labels_options['font']['color'] = 'black'
+    chart.add_series({'categories': '=Зарплата_табл!A2:A6',
+                      'values': '=Зарплата_табл!C2:C6',
+                      'data_labels': labels_options,
+                      'fill': {'color': 'blue'},
+                      'gradient': {'colors': ['#EE8E00', '#FFE36D'],
+                                   'angle': 90},
+                      'y2_axis': True,
+                      'gap': 40})
 
-    chart.set_y_axis({'num_format': '# ### ###',
-                      'num_font': axis_font})
+    chart.set_x_axis(axis_options)
+    chart.set_y_axis(axis_options)
+    chart.set_y2_axis(axis_options)
 
     chart.set_title({'name': f'Показатели зарплаты: {vacancy_name}',
                      'name_font': title_font})

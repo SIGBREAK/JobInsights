@@ -12,6 +12,7 @@ def create_pie_chart(wb, chart_name, vacancy_name):
     chartsheet.set_chart(chart)
 
     labels_options = {'percentage': True,
+                      'category': True,
                       'font': {'name': 'Arial',
                                'size': 14,
                                'bold': True,
@@ -31,4 +32,4 @@ def create_pie_chart(wb, chart_name, vacancy_name):
     chart.set_title({"name": f"Формат работы: {vacancy_name}",
                      'name_font': title_font})
 
-    chart.set_legend({'position': 'top'})
+    chart.set_legend({'none': True})
