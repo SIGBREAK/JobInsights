@@ -36,7 +36,8 @@ class MainWindow(QWidget):
         self.region.setGeometry(10, 80, 40, 20)
 
         # Выбор региона
-        self.area_box = QLineEdit('Москва', self)
+        self.area_box = QLineEdit(self)
+        self.area_box.setPlaceholderText('Россия')
         self.area_box.setGeometry(60, 80, 200, 20)
         suggestions = self._areas_dict.values()  # Тут подхватываются города из инициализатора API hh.ru
         completer = QCompleter(suggestions, self.area_box)
