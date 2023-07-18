@@ -19,7 +19,7 @@ def write_salary_statistics(ws, parser_object, data=None):
     ws.write_row('A6', ('Максимальная', '', '=MAX(Вакансии!B:B, Вакансии!C:C)'))
 
 
-def create_column_chart(wb, chart_name, vacancy_name):
+def create_column_chart(wb, chart_name, vacancy_name, region):
     chartsheet = wb.add_chartsheet(chart_name)
     chart = wb.add_chart({"type": "column"})
     chartsheet.set_chart(chart)
@@ -35,7 +35,7 @@ def create_column_chart(wb, chart_name, vacancy_name):
     axis_options = {'num_format': '# ### ###',
                     'num_font': {'name': 'Times New Roman', 'size': 12}}
 
-    title_font = {'name': 'Times New Roman', 'size': 17}
+    title_font = {'name': 'Times New Roman', 'size': 15}
 
     chart.add_series({'categories': '=Зарплата_табл!A2:A6',
                       'values': '=Зарплата_табл!B2:B6',
@@ -59,7 +59,7 @@ def create_column_chart(wb, chart_name, vacancy_name):
     chart.set_y_axis(axis_options)
     chart.set_y2_axis(axis_options)
 
-    chart.set_title({'name': f'Показатели зарплаты: {vacancy_name}',
+    chart.set_title({'name': f'Показатели заработной платы: {vacancy_name}\n({region})',
                      'name_font': title_font})
 
     chart.set_legend({'none': True})

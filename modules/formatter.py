@@ -4,8 +4,8 @@ from xlsxwriter import Workbook
 
 
 class CustomWorkbook(Workbook):
-    def __init__(self, f_path, my_request):
-        super().__init__(rf'{f_path}{my_request}.xlsx', {'constant_memory': True})
+    def __init__(self, f_path, request, region):
+        super().__init__(rf'{f_path}{request} ({region}).xlsx', {'constant_memory': True})
 
     def add_cells_formatting(self):
         headlines_format = self.add_format({'bold': True,

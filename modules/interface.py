@@ -98,7 +98,7 @@ class MainWindow(QWidget):
 
     def search(self):
         my_request = self.job_field.text()
-        my_region = self.area_box.text()
+        my_region = 'Россия' if not self.area_box.text() else self.area_box.text()
         pages_number = self.pages_slider.value()
         my_area_id = self._object_parser.get_my_area_id(my_region, self._areas_dict)
 

@@ -21,7 +21,7 @@ class FileWorker(QThread):
 
         # Создание файла Excel
         path = get_path()
-        wb_1 = CustomWorkbook(path, self.my_request)
+        wb_1 = CustomWorkbook(path, self.my_request, self.my_region)
 
         # Создание листов
         ws_1 = wb_1.add_worksheet('Вакансии')
@@ -49,15 +49,15 @@ class FileWorker(QThread):
 
         # Создание диаграммы требуемых навыков
         skills.write_skills(ws_2, self._parser)
-        skills.create_bar_chart(wb_1, 'Навыки', self.my_request)
+        skills.create_bar_chart(wb_1, 'Навыки', self.my_request, self.my_region)
 
         # Создание диаграммы уровня заработной платы
         salary.write_salary_statistics(ws_3, self._parser)
-        salary.create_column_chart(wb_1, 'Зарплата', self.my_request)
+        salary.create_column_chart(wb_1, 'Зарплата', self.my_request, self.my_region)
 
         # Создание диаграммы формата работы
         remote.write_remote_data(ws_4)
-        remote.create_pie_chart(wb_1, 'Удалёнка', self.my_request)
+        remote.create_pie_chart(wb_1, 'Удалёнка', self.my_request, self.my_region)
 
         # Закрытие файла
         wb_1.close()

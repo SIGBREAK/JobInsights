@@ -9,7 +9,7 @@ def write_skills(ws, parser_object):
         ws.write_row(f'A{row}', data)
 
 
-def create_bar_chart(wb, chart_name, vacancy_name):
+def create_bar_chart(wb, chart_name, vacancy_name, region):
     chartsheet = wb.add_chartsheet(chart_name)
     chart = wb.add_chart({'type': 'bar'})
     chartsheet.set_chart(chart)
@@ -18,7 +18,7 @@ def create_bar_chart(wb, chart_name, vacancy_name):
                       'font': {'italic': True}}
 
     axis_font = {'name': 'Times New Roman', 'size': 12, 'bold': False}
-    title_font = {'name': 'Times New Roman', 'size': 17}
+    title_font = {'name': 'Times New Roman', 'size': 15}
 
     chart.add_series({'categories': f'=Навыки_табл!A1:A20',
                       'values': f'=Навыки_табл!B1:B20',
@@ -28,7 +28,7 @@ def create_bar_chart(wb, chart_name, vacancy_name):
                                    'angle': 180},
                       'gap': 80})
 
-    chart.set_title({'name': f'Топ-20 навыков: {vacancy_name}',
+    chart.set_title({'name': f'Топ-20 навыков: {vacancy_name}\n({region})',
                      'name_font': title_font})
 
     chart.set_x_axis({'name': 'Частота',
