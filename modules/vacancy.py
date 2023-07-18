@@ -1,8 +1,8 @@
 from datetime import datetime, date
 from re import search
+from .currencies import get_rates
 
-
-rates = {'RUR': 1, 'USD': 81, 'EUR': 89, 'KZT': 0.18}
+rates = get_rates()
 
 
 class Vacancy:
@@ -50,7 +50,7 @@ class Vacancy:
         bottom, top, currency = salary['from'], salary['to'], salary['currency']
 
         def calculate_salary(bound):
-            return int(k * bound * rates[currency]) if bound else ''
+            return int(k * bound * (1 / rates[currency])) if bound else ''
         return calculate_salary(bottom), calculate_salary(top)
 
     @classmethod
