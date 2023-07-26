@@ -1,6 +1,7 @@
 from PyQt5.QtCore import QThread, pyqtSignal
 from . import remote, salary, skills
-from .formatter import *
+from .styles import CustomWorkbook, CustomWorksheet
+from os import path, mkdir
 
 
 class FileWorker(QThread):
@@ -16,18 +17,25 @@ class FileWorker(QThread):
         self._areas_dict = areas_dict
         self._parser = object_parser
 
+    @staticmethod
+    def get_path():
+        directory = r'../Мои запросы/'
+        if not path.exists(directory):
+            mkdir(directory)
+        return directory
+
     def run(self):
         my_area_id = self._parser.get_my_area_id(self.my_region, self._areas_dict)
 
         # Создание файла Excel
-        path = get_path()
+        path = self.get_path()
         wb_1 = CustomWorkbook(path, self.my_request, self.my_region)
 
         # Создание листов
-        ws_1 = wb_1.add_worksheet('Вакансии')
-        ws_2 = wb_1.add_worksheet('Навыки_табл')
-        ws_3 = wb_1.add_worksheet('Зарплата_табл')
-        ws_4 = wb_1.add_worksheet('Удалёнка_табл')
+        ws_1 = CustomWorksheet('Вакансии', wb_1)
+        ws_2 = CustomWorksheet('Навыки_табл', wb_1)
+        ws_3 = CustomWorksheet('Зарплата_табл', wb_1)
+        ws_4 = CustomWorksheet('Удалёнка_табл', wb_1)
 
         # Таблицы 2,3,4 - вспомогательные и должны быть скрыты
         ws_2.hide()
@@ -38,11 +46,11 @@ class FileWorker(QThread):
         headlines = ['Должность', 'ЗП (на руки) от, ₽', 'ЗП (на руки) до, ₽', 'Минимум опыта\nлет ',
                      'Удалёнка', 'Опубликовано\n(дней)', 'Создано\n(дней)', 'Компания', 'Подробнее']
         headlines_format, string_format, numbers_format, days_format = wb_1.add_cells_formatting()
-        add_headlines(ws_1, headlines, headlines_format)
-        set_cell_formats(ws_1, string_format, numbers_format, days_format)
-        add_conditional_formatting(ws_1)
+        ws_1.add_headlines(headlines, headlines_format)
+        ws_1.set_cell_formats(string_format, numbers_format, days_format)
+        ws_1.add_conditional_formatting()
         ws_1.freeze_panes(1, 0)
-        cut_unused_cells(ws_1, col=9)
+        ws_1.cut_unused_cells(col=9)
 
         # Запись данных о вакансиях в таблицу
         self._parser.parse_page(self.my_request, my_area_id, self.pages_number, ws_1, self)
