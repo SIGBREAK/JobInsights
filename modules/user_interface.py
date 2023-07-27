@@ -1,17 +1,22 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import (QWidget, QLineEdit, QCompleter,
-                             QPushButton, QStyle, QSlider, QLabel, QProgressBar)
+from PyQt5.QtWidgets import (QLineEdit, QCompleter,
+                             QPushButton, QStyle, QSlider, QLabel, QProgressBar, QMainWindow)
+from .api import areas_dict, get_my_area_id, check_for_vacancies
+from .worker import FileWorker
+from .parser import Parser
 
 
-class MainWindow(QWidget):
-    def __init__(self, class_worker, object_parser):
+class MainWindow(QMainWindow):
+    def __init__(self):
         super().__init__()
         self.worker = None
-        self._class_worker = class_worker
-        self._object_parser = object_parser
-        self._areas_dict = self._object_parser.init_areas_dict()
+        self.areas_dict = areas_dict
 
+        self.init_user_interface()
+
+    def init_user_interface(self):
+        # Название программы и размеры окна
         self.setWindowTitle('hh_insights')
         self.setFixedSize(500, 235)
 
@@ -39,7 +44,7 @@ class MainWindow(QWidget):
         self.area_box = QLineEdit(self)
         self.area_box.setPlaceholderText('Россия')
         self.area_box.setGeometry(60, 80, 200, 20)
-        suggestions = self._areas_dict.values()  # Тут подхватываются города из инициализатора API hh.ru
+        suggestions = self.areas_dict.values()  # Тут подхватываются города из инициализатора API hh.ru
         completer = QCompleter(suggestions, self.area_box)
         completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.area_box.setCompleter(completer)
@@ -75,23 +80,26 @@ class MainWindow(QWidget):
         # Связывание наших кнопок с функциями
         self.pages_slider.valueChanged.connect(self.update_pages_number)
         self.search_button.clicked.connect(self.search)
-        self.stop_button.clicked.connect(self._object_parser.stop_parsing)
+        self.stop_button.clicked.connect(Parser.stop_parsing)
 
     def update_pages_number(self, value):
         self.pages_display.setText(f'Число страниц поиска: {value}')
 
-    def updateProgressBar(self, value):
+    def update_progress_bar(self, value):
         self.progress_bar.setValue(value)
 
     def update_progress_text(self, vacancy_name):
         self.vacancy_label.setText(vacancy_name)
 
+    def unlock_buttons(self, key):
+        self.search_button.setEnabled(key)
+        self.job_field.setEnabled(key)
+        self.area_box.setEnabled(key)
+        self.pages_slider.setEnabled(key)
+        self.stop_button.setEnabled(not key)
+
     def searching_completed(self):
-        self.search_button.setEnabled(True)
-        self.job_field.setEnabled(True)
-        self.area_box.setEnabled(True)
-        self.pages_slider.setEnabled(True)
-        self.stop_button.setEnabled(False)
+        self.unlock_buttons(key=True)
         self.vacancy_label.setText('')
         self.progress_bar.setValue(0)
         self.status_label.setText(f'Статус: Файл создан.\nПоиск завершён.')
@@ -100,24 +108,19 @@ class MainWindow(QWidget):
         my_request = self.job_field.text()
         my_region = 'Россия' if not self.area_box.text() else self.area_box.text()
         pages_number = self.pages_slider.value()
-        my_area_id = self._object_parser.get_my_area_id(my_region, self._areas_dict)
+        area_id = get_my_area_id(my_region, self.areas_dict)
 
-        # Отсечка на создание треда при отсутствии вакансий/ запроса
-        _, found = self._object_parser.get_page(my_request, my_area_id)
-
-        if not found or not my_request:
+        found = check_for_vacancies(my_request, area_id)
+        if not found:
             self.status_label.setText(f"Статус: Не найдено вакансий.")
             return
 
         # Создаём тред для поиска вакансий
-        self.search_button.setEnabled(False)
-        self.job_field.setEnabled(False)
-        self.area_box.setEnabled(False)
-        self.pages_slider.setEnabled(False)
-        self.stop_button.setEnabled(True)
+        self.unlock_buttons(key=False)
         self.status_label.setText(f"Статус: Идёт поиск.\nПо запросу найдено {found} вакансий.")
-        self.worker = self._class_worker(my_request, my_region, pages_number, self._areas_dict, self._object_parser)
-        self.worker.progressStatus.connect(self.updateProgressBar)
+        self.worker = FileWorker(my_request, my_region, area_id, pages_number)
+
+        self.worker.progressStatus.connect(self.update_progress_bar)
         self.worker.progressText.connect(self.update_progress_text)
         self.worker.taskFinished.connect(self.searching_completed)
         self.worker.start()

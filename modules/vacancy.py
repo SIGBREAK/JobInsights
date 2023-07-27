@@ -1,8 +1,6 @@
 from datetime import datetime, date
 from re import search
-from .currencies import get_rates
-
-rates = get_rates()
+from .api import rates
 
 
 class Vacancy:
@@ -57,6 +55,3 @@ class Vacancy:
     def __find_timedelta(cls, date_obj):
         published = datetime.strptime(date_obj, '%Y-%m-%dT%H:%M:%S%z')
         return (date.today() - published.date()).days
-
-    def write_all_data(self, worksheet):
-        worksheet.write_row(f'A{self.row}', list(self.__dict__.values())[1:-1])
