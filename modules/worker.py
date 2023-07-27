@@ -5,11 +5,30 @@ from .parser import Parser
 
 
 class FileWorker(QThread):
+    """
+    Класс FileWorker представляет собой объект для работы с файлами Excel. Класс унаследован от QThread,
+    что позволяет выполнять работу в фоновом режиме для избежания блокировки пользовательского интерфейса.
+
+    Класс FileWorker имеет следующие сигналы:
+        1) progressStatus: Сигнал с информацией о прогрессе выполнения задачи (тип int).
+        2) progressText: Сигнал с текстовой информацией о прогрессе выполнения задачи (тип str).
+        3) taskFinished: Сигнал, который отправляется при завершении задачи.
+    """
+
     progressStatus = pyqtSignal(int)
     progressText = pyqtSignal(str)
     taskFinished = pyqtSignal()
 
-    def __init__(self, request, region, area_id, pages):
+    def __init__(self, request: str, region: str, area_id: int, pages: int):
+        """
+        Конструктор класса FileWorker.
+
+        :param request: Текстовый запрос пользователя.
+        :param region: Город (регион) пользователя.
+        :param area_id: id города (региона) пользователя.
+        :param pages: Количество анализируемых страниц.
+        """
+
         super().__init__()
         self.my_request = request
         self.my_region = region
@@ -17,18 +36,38 @@ class FileWorker(QThread):
         self.pages_number = pages
 
     @staticmethod
-    def get_path():
+    def get_path() -> str:
+        """
+        Статический метод, который создаёт директорию для хранения файлов и возвращает её.
+
+        :return: Путь до директории с файлами.
+        """
+
         directory = r'../Мои запросы/'
         if not path.exists(directory):
             mkdir(directory)
         return directory
 
-    def create_workbook(self):
+    def create_workbook(self) -> CustomWorkbook:
+        """
+        Метод создает книгу Excel и возвращает ее объект.
+
+        :return: Объект книги Excel.
+        """
+
         directory = self.get_path()
         return CustomWorkbook(directory, self.my_request, self.my_region)
 
     @staticmethod
-    def create_sheets(workbook):
+    def create_sheets(workbook: CustomWorkbook) -> tuple:
+        """
+        Метод создаёт листы в книге Excel и возвращает их объекты.
+
+        :param workbook: Объект книги Excel.
+
+        :return: Кортеж из объектов листов Excel.
+        """
+
         ws_1 = CustomWorksheet('Вакансии', workbook)
         ws_2 = CustomWorksheet('Навыки_табл', workbook)
         ws_3 = CustomWorksheet('Зарплата_табл', workbook)
@@ -36,20 +75,41 @@ class FileWorker(QThread):
         return ws_1, ws_2, ws_3, ws_4
 
     @staticmethod
-    def hide_data_sheets(*sheets):
+    def hide_data_sheets(*sheets: tuple[CustomWorksheet]):
+        """
+        Метод скрывает листы с данными в Excel файле, так как они будут представлены на диаграммах.
+
+        :param sheets: Переменное количество объектов листов Excel, которые необходимо скрыть.
+        """
+
         for s in sheets:
             s.hide()
 
     @staticmethod
-    def format_main_table(table_sheet, formats_from):
-        headlines_format, string_format, numbers_format, days_format = formats_from.make_cells_formats()
-        table_sheet.add_headlines(headlines_format)
-        table_sheet.set_cell_formats(string_format, numbers_format, days_format)
-        table_sheet.add_conditional_formatting()
-        table_sheet.freeze_panes(1, 0)
-        table_sheet.cut_unused_cells(col=9)
+    def format_main_table(table: CustomWorksheet, formats_from: CustomWorkbook):
+        """
+        Форматирует главную таблицу.
 
-    def write_data(self, area_id, table, *others):
+        :param table: Объект кастомного листа (сводная таблица данных).
+        :param formats_from: Объект, предоставляющий необходимые форматы для ячеек таблицы.
+        """
+
+        headlines_format, string_format, numbers_format, days_format = formats_from.make_cells_formats()
+        table.add_headlines(headlines_format)
+        table.set_cell_formats(string_format, numbers_format, days_format)
+        table.add_conditional_formatting()
+        table.freeze_panes(1, 0)
+        table.cut_unused_cells(col=9)
+
+    def write_data(self, area_id: int, table: CustomWorksheet, *others: tuple[CustomWorksheet]):
+        """
+        Заполняет все таблицы собранными данными.
+
+        :param area_id: Идентификатор города (региона).
+        :param table: Объект кастомного листа (главная таблица).
+        :param others: Дополнительные листы, в которые будут записаны данные (навыки, зарплата, удаленка).
+        """
+
         parser_obj = Parser()
         parser_obj.parse_page(self.my_request, area_id, self.pages_number, table, worker=self)
 
@@ -60,17 +120,31 @@ class FileWorker(QThread):
         others[2].write_remote_data()
 
     @staticmethod
-    def create_charts(workbook):
+    def create_charts(workbook: CustomWorkbook):
+        """
+        Создает диаграммы для полученных данных.
+
+        :param workbook: Объект книги Excel.
+        """
+
         workbook.create_bar_chart('Навыки')
         workbook.create_column_chart('Зарплата')
         workbook.create_pie_chart('Удалёнка')
 
-    def close_workbook(self, workbook):
+    def close_workbook(self, workbook: CustomWorkbook):
+        """
+        Закрывает книгу и завершает процесс работы.
+
+        :param workbook: Объект книги Excel.
+        """
+
         workbook.close()
         print(f'Файл {self.my_request} закрыт.')
         self.taskFinished.emit()
 
     def run(self):
+        """Запускает процесс формирования и заполнения книги Excel."""
+
         workbook = self.create_workbook()
 
         table, skills, salary, remote = self.create_sheets(workbook)

@@ -13,9 +13,6 @@ class MainWindow(QMainWindow):
         self.worker = None
         self.areas_dict = areas_dict
 
-        self.init_user_interface()
-
-    def init_user_interface(self):
         # Название программы и размеры окна
         self.setWindowTitle('hh_insights')
         self.setFixedSize(500, 235)
@@ -77,21 +74,45 @@ class MainWindow(QMainWindow):
         vacancy_font.setItalic(True)
         self.vacancy_label.setFont(vacancy_font)
 
-        # Связывание наших кнопок с функциями
+        # Связывание виджетов с функциями
         self.pages_slider.valueChanged.connect(self.update_pages_number)
         self.search_button.clicked.connect(self.search)
         self.stop_button.clicked.connect(Parser.stop_parsing)
 
-    def update_pages_number(self, value):
+    def update_pages_number(self, value: int):
+        """
+        Обновляет отображаемое значение числа анализируемых страниц поиска при движении слайдера.
+
+        :param value: Новое значение числа страниц.
+        """
+
         self.pages_display.setText(f'Число страниц поиска: {value}')
 
-    def update_progress_bar(self, value):
+    def update_progress_bar(self, value: int):
+        """
+        Обновляет значение шкалы прогресса.
+
+        :param value: Значение прогресса (от 0 до 100).
+        """
+
         self.progress_bar.setValue(value)
 
-    def update_progress_text(self, vacancy_name):
+    def update_progress_text(self, vacancy_name: str):
+        """
+        Обновляет название вакансии, отображаемое в шкале прогресса.
+
+        :param vacancy_name: Название текущей обрабатываемой вакансии.
+        """
+
         self.vacancy_label.setText(vacancy_name)
 
     def unlock_buttons(self, key):
+        """
+        Разблокирует или блокирует кнопки и поля ввода в зависимости от значения ключа.
+
+        :param key: Значение True разблокирует элементы (кроме кнопки СТОП), False - блокирует (также кроме СТОП).
+        """
+
         self.search_button.setEnabled(key)
         self.job_field.setEnabled(key)
         self.area_box.setEnabled(key)
@@ -99,12 +120,16 @@ class MainWindow(QMainWindow):
         self.stop_button.setEnabled(not key)
 
     def searching_completed(self):
+        """Вызывается по завершении процесса поиска вакансий и обновляет интерфейс после завершения работы."""
+
         self.unlock_buttons(key=True)
         self.vacancy_label.setText('')
         self.progress_bar.setValue(0)
         self.status_label.setText(f'Статус: Файл создан.\nПоиск завершён.')
 
     def search(self):
+        """Запускает процесс поиска вакансий и создания книги Excel."""
+
         my_request = self.job_field.text()
         my_region = 'Россия' if not self.area_box.text() else self.area_box.text()
         pages_number = self.pages_slider.value()

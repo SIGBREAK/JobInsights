@@ -1,21 +1,26 @@
 from requests import get
-from typing import Dict
 
 
-def get_rates():
+def get_rates() -> dict[str, str]:
+    """
+    Функция для получения курса валют по API hh.ru.
+
+    :return: Словарь с курсами валют {код_валюты: курс}.
+    """
+
     with get('https://api.hh.ru/dictionaries') as r:
         return {curr['code']: curr['rate'] for curr in r.json()['currency']}
 
 
-def get_my_area_id(my_region: str, areas: Dict[str, str]) -> int:
+def get_my_area_id(my_region: str, areas: dict[str, str]) -> int:
     """
     Функция возвращает актуальный id заданного пользователем региона.
 
         Примечание! Предварительно должен быть сформирован словарь areas c актуальными id для различных регионов.
 
-    :param my_region: город (регион) пользователя
-    :param areas: словарь, полученный от API {id: название}
-    :return: id города (региона)
+    :param my_region: город (регион) пользователя.
+    :param areas: словарь, полученный от API {id: название}.
+    :return: id города (региона).
     """
 
     for area_id, name_area in areas.items():
@@ -23,13 +28,13 @@ def get_my_area_id(my_region: str, areas: Dict[str, str]) -> int:
             return int(area_id)
 
 
-def get_page(my_request: str, my_area_id: int, page=0):
+def get_page(my_request: str, my_area_id: int, page=0) -> tuple:
     """
-    Функция необходима для создания запроса к API hh.ru. с целью - получения данных о вакансиях.
+    Функция необходима для создания запроса к API hh.ru с целью - получения данных о вакансиях.
 
-    :param my_request: текст запроса пользователя
-    :param my_area_id: id города (региона) пользователя
-    :param page: номер страницы по порядку (начинается от нуля)
+    :param my_request: текст запроса пользователя.
+    :param my_area_id: id города (региона) пользователя.
+    :param page: номер страницы по порядку (начинается от нуля).
     :return:
             1) JSON-объект с вакансиями;
             2) количество найденных вакансий по запросу.
@@ -44,14 +49,10 @@ def get_page(my_request: str, my_area_id: int, page=0):
         return json_object['items'], json_object['found']
 
 
-def init_areas_dict() -> Dict[str, str]:
+def init_areas_dict() -> dict[str, str]:
     """
     Функция собирает актуальные данные о городах и регионах {id: название},
-    что позволяет не привязываться к айдишникам, которые могут быть изменены в API hh.ru.
-
-        Примечание! Функция должна быть вызвана при формировании главного окна.
-
-        Ограничение! Сбор данных осуществляется только по территории РФ.
+    что позволяет не привязываться к id, которые могут быть изменены в API hh.ru.
 
     :return: словарь городов (регионов) {id: название}.
     """
@@ -59,7 +60,7 @@ def init_areas_dict() -> Dict[str, str]:
     with get('https://api.hh.ru/areas') as r:
         json_obj = r.json()
 
-    areas = {}
+    areas = {}  # Примечание! Сбор данных осуществляется только по территории РФ.
     for country in filter(lambda item: item['name'] == 'Россия', json_obj):
         areas[country['id']] = country['name']
         for region in country['areas']:
@@ -69,7 +70,15 @@ def init_areas_dict() -> Dict[str, str]:
     return areas
 
 
-def check_for_vacancies(request, area_id):
+def check_for_vacancies(request: str, area_id: int) -> int:
+    """
+    Функция для проверки наличия вакансий по заданному запросу и региону.
+
+    :param request: текст запроса пользователя.
+    :param area_id: id города (региона) пользователя.
+    :return: Количество найденных вакансий по запросу и региону.
+    """
+
     _, found = get_page(request, area_id)
 
     if not request:
