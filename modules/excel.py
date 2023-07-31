@@ -259,6 +259,9 @@ class CustomWorksheet:
         :param salaries_list: Список значений зарплат.
         """
 
+        if not salaries_list:
+            return
+
         functions = {'Медианная': median,
                      'Средняя': mean,
                      'Модальная': mode}

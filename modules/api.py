@@ -12,6 +12,13 @@ def get_rates() -> dict[str, str]:
         return {curr['code']: curr['rate'] for curr in r.json()['currency']}
 
 
+def get_vacancy_search_order():
+    """Возвращает ключи сортировок получаемых вакансий в JSON'ах. (Кроме ключа связанного с расстоянием)."""
+
+    with get('https://api.hh.ru/dictionaries') as r:
+        return {curr['name']: curr['id'] for curr in r.json()['vacancy_search_order'] if curr['id'] != 'distance'}
+
+
 def get_my_area_id(my_region: str, areas: dict[str, str]) -> int:
     """
     Функция возвращает актуальный id заданного пользователем региона.
@@ -28,23 +35,31 @@ def get_my_area_id(my_region: str, areas: dict[str, str]) -> int:
             return int(area_id)
 
 
-def get_page(my_request: str, my_area_id: int, page=0) -> tuple:
+def get_page(request: str, area_id: int, period,
+             only_with_salary=False, order_by='relevance', page=0) -> tuple:
     """
     Функция необходима для создания запроса к API hh.ru с целью - получения данных о вакансиях.
 
-    :param my_request: текст запроса пользователя.
-    :param my_area_id: id города (региона) пользователя.
+    :param request: текст запроса пользователя.
+    :param area_id: id города (региона) пользователя.
+    :param period: период, в который были опубликованы вакансии.
+    :param only_with_salary: в выборку JSON попадают только вакансии с указанной ЗП.
+    :param order_by: сортировка JSON по (соответствию, дате, убыванию и возрастанию дохода).
     :param page: номер страницы по порядку (начинается от нуля).
     :return:
             1) JSON-объект с вакансиями;
             2) количество найденных вакансий по запросу.
     """
 
-    params = {'text': f'{my_request}',
-              'area': my_area_id,
+    params = {'text': request,
+              'area': area_id,
               'page': page,
-              'per_page': 100}
-    with get('https://api.hh.ru/vacancies', params) as r:
+              'per_page': 100,
+              'only_with_salary': only_with_salary,
+              'order_by': order_by,
+              'period': period}
+
+    with get('https://api.hh.ru/vacancies', params=params) as r:
         json_object = r.json()
         return json_object['items'], json_object['found']
 
@@ -70,21 +85,6 @@ def init_areas_dict() -> dict[str, str]:
     return areas
 
 
-def check_for_vacancies(request: str, area_id: int) -> int:
-    """
-    Функция для проверки наличия вакансий по заданному запросу и региону.
-
-    :param request: текст запроса пользователя.
-    :param area_id: id города (региона) пользователя.
-    :return: Количество найденных вакансий по запросу и региону.
-    """
-
-    _, found = get_page(request, area_id)
-
-    if not request:
-        return 0
-    return found
-
-
 rates = get_rates()
 areas_dict = init_areas_dict()
+vacancy_search_order = get_vacancy_search_order()

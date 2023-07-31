@@ -1,10 +1,11 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (QLineEdit, QCompleter,
-                             QPushButton, QStyle, QSlider, QLabel, QProgressBar, QMainWindow)
-from .api import areas_dict, get_my_area_id, check_for_vacancies
+                             QPushButton, QStyle, QSlider, QLabel, QProgressBar, QMainWindow, QCheckBox, QComboBox)
+
+from .api import areas_dict, get_my_area_id, get_page, vacancy_search_order
+from .parser import parser
 from .worker import FileWorker
-from .parser import Parser
 
 
 class MainWindow(QMainWindow):
@@ -15,7 +16,7 @@ class MainWindow(QMainWindow):
 
         # Название программы и размеры окна
         self.setWindowTitle('hh_insights')
-        self.setFixedSize(500, 235)
+        self.setFixedSize(500, 350)
 
         # Окно ввода вакансии
         self.job_field = QLineEdit('Python разработчик', self)
@@ -43,41 +44,64 @@ class MainWindow(QMainWindow):
         self.area_box.setGeometry(60, 80, 200, 20)
         suggestions = self.areas_dict.values()  # Тут подхватываются города из инициализатора API hh.ru
         completer = QCompleter(suggestions, self.area_box)
-        completer.setCaseSensitivity(Qt.CaseInsensitive)
+        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.area_box.setCompleter(completer)
 
         # Слайдер и количество анализируемых страниц
-        self.pages_slider = QSlider(Qt.Horizontal, self)
-        self.pages_slider.setGeometry(10, 150, 180, 20)
+        self.pages_slider = QSlider(Qt.Orientation.Horizontal, self)
+        self.pages_slider.setGeometry(10, 260, 180, 20)
         self.pages_slider.setMinimum(1)
         self.pages_slider.setMaximum(20)
         self.pages_slider.setValue(10)
 
         self.pages_display = QLabel(f'Число страниц поиска: {self.pages_slider.value()}', self)
-        self.pages_display.setGeometry(10, 170, 180, 20)
+        self.pages_display.setGeometry(10, 280, 180, 20)
         self.pages_display.setFont(QFont('Arial', 11))
 
         # Статус строка внизу справа
         self.status_label = QLabel('Статус: Ожидание', self)
-        self.status_label.setGeometry(280, 150, 210, 45)
-        self.status_label.setAlignment(Qt.AlignRight)
+        self.status_label.setGeometry(280, 260, 210, 45)
+        self.status_label.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         # Шкала прогресса поиска
         self.progress_bar = QProgressBar(self)
-        self.progress_bar.setGeometry(10, 200, 480, 30)
+        self.progress_bar.setGeometry(10, 310, 480, 30)
         self.progress_bar.setMaximum(100)
 
         # Названия вакансий, меняющиеся в шкале прогресса
         self.vacancy_label = QLabel('', self)
-        self.vacancy_label.setGeometry(20, 200, 480, 30)
+        self.vacancy_label.setGeometry(20, 310, 480, 30)
         vacancy_font = QFont()
         vacancy_font.setItalic(True)
         self.vacancy_label.setFont(vacancy_font)
 
+        # Галочка отсева вакансий без указания дохода
+        self.salary_button = QCheckBox('Только с указанием дохода', self)
+        self.salary_button.setGeometry(10, 110, 230, 20)
+        self.salary_button.isChecked()
+
+        # Подпись для сортировки
+        self.order_by_label = QLabel('Сортировать:', self)
+        self.order_by_label.setGeometry(10, 140, 90, 20)
+
+        # Выпадающий список сортировки
+        self.order_by_box = QComboBox(self)
+        self.order_by_box.addItems(vacancy_search_order)
+        self.order_by_box.setGeometry(95, 140, 165, 20)
+
+        # Подпись для периода публикации
+        self.period_label = QLabel(f'Только вакансии за последние{" ".center(19)}дней.', self)
+        self.period_label.setGeometry(10, 230, 250, 20)
+
+        # Вписать значение периода публикации
+        self.period_box = QLineEdit(self)
+        self.period_box.setPlaceholderText('365')
+        self.period_box.setGeometry(190, 230, 30, 20)
+
         # Связывание виджетов с функциями
         self.pages_slider.valueChanged.connect(self.update_pages_number)
         self.search_button.clicked.connect(self.search)
-        self.stop_button.clicked.connect(Parser.stop_parsing)
+        self.stop_button.clicked.connect(parser.stop_parsing)
 
     def update_pages_number(self, value: int):
         """
@@ -117,6 +141,9 @@ class MainWindow(QMainWindow):
         self.job_field.setEnabled(key)
         self.area_box.setEnabled(key)
         self.pages_slider.setEnabled(key)
+        self.salary_button.setEnabled(key)
+        self.order_by_box.setEnabled(key)
+        self.period_box.setEnabled(key)
         self.stop_button.setEnabled(not key)
 
     def searching_completed(self):
@@ -127,23 +154,46 @@ class MainWindow(QMainWindow):
         self.progress_bar.setValue(0)
         self.status_label.setText(f'Статус: Файл создан.\nПоиск завершён.')
 
+    def period_edit(self):
+        """Возвращает валидное значение числа дней, за которое могли быть опубликованы вакансии."""
+
+        try:
+            value = int(self.period_box.text())
+            if 0 < value <= 365:
+                return value
+        except ValueError:
+            pass
+        self.period_box.setText('365')
+        return 365
+
     def search(self):
         """Запускает процесс поиска вакансий и создания книги Excel."""
 
-        my_request = self.job_field.text()
-        my_region = 'Россия' if not self.area_box.text() else self.area_box.text()
-        pages_number = self.pages_slider.value()
-        area_id = get_my_area_id(my_region, self.areas_dict)
+        request = self.job_field.text()
+        region = 'Россия' if not self.area_box.text() else self.area_box.text()
+        area_id = get_my_area_id(region, self.areas_dict)
+        pages = self.pages_slider.value()
+        period = self.period_edit()
+        order_by = vacancy_search_order[self.order_by_box.currentText()]
+        only_with_salary = self.salary_button.isChecked()
 
-        found = check_for_vacancies(my_request, area_id)
-        if not found:
+        _, found = get_page(request, area_id, period, only_with_salary)
+        if not request or not found:
             self.status_label.setText(f"Статус: Не найдено вакансий.")
             return
+
+        options = {'request': request,
+                   'region': region,
+                   'area_id': area_id,
+                   'pages': pages,
+                   'period': period,
+                   'order_by': order_by,
+                   'only_with_salary': only_with_salary}
 
         # Создаём тред для поиска вакансий
         self.unlock_buttons(key=False)
         self.status_label.setText(f"Статус: Идёт поиск.\nПо запросу найдено {found} вакансий.")
-        self.worker = FileWorker(my_request, my_region, area_id, pages_number)
+        self.worker = FileWorker(options=options)
 
         self.worker.progressStatus.connect(self.update_progress_bar)
         self.worker.progressText.connect(self.update_progress_text)

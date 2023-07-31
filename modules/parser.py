@@ -15,21 +15,19 @@ class Parser:
         2) список требуемых навыков.
     """
 
-    __stop = False
-
     def __init__(self):
         self.salaries_list = []
         self.skills_list = []
+        self.__stop = False
 
-    @classmethod
-    def stop_parsing(cls) -> None:
+    def stop_parsing(self) -> None:
         """
         Функция останавливает парсинг страницы и привязана к кнопке СТОП интерфейса программы.
 
         :return: None
         """
 
-        cls.__stop = True
+        self.__stop = True
 
     def collect_salary_data(self, vacancy: Vacancy) -> None:
         """
@@ -59,9 +57,11 @@ class Parser:
 
     def get_collected_data(self):
         """Функция возвращает salaries_list и skills_list, соответственно."""
+
         return self.salaries_list, self.skills_list
 
-    def parse_page(self, my_request: str, my_area_id: int, pages_number: int, sheet, worker) -> None:
+    def parse_page(self, request: str, area_id: int, pages: int,
+                   period: int,  only_with_salary: bool, order_by: str, sheet, worker) -> None:
         """
         Функция осуществляет парсинг страницы. Каждую итерацию она:
             1) записывает данные в Excel (в главную и вспомогательные таблицы);
@@ -70,20 +70,25 @@ class Parser:
 
         Примечание! Поиск не происходит, если на странице не найдено вакансий.
 
-        Ограничение! Для обхода блокировки (требования ввести Captcha) от API hh.ru вводится задержка обработчика событий.
+        Ограничение! Для обхода блокировки (Captcha) от API hh.ru вводится задержка обработчика событий.
 
-        :param my_request: текст запроса пользователя.
-        :param my_area_id: id города (региона) пользователя.
-        :param pages_number: кол-во анализируемых страниц.
+        :param request: текст запроса пользователя.
+        :param area_id: id города (региона) пользователя.
+        :param pages: кол-во анализируемых страниц.
+        :param period: период, в который были опубликованы вакансии.
+        :param order_by: сортировка JSON по (соответствию, дате, убыванию и возрастанию дохода).
+        :param only_with_salary: в выборку JSON попадают только вакансии с указанной ЗП.
         :param sheet: лист (объект класса Worksheet), куда будет осуществляться запись.
-        :param worker: поток (объект класса FileWorker), который принимает сигналы и посылать их на GUI.
+        :param worker: поток (объект класса FileWorker), который принимает сигналы и посылает их на GUI.
         :return: None.
         """
 
         counter = count(1)
 
-        for page in range(pages_number):
-            items, found = get_page(my_request, my_area_id, page)
+        for page in range(pages):
+            items, found = get_page(request, area_id, period, only_with_salary, order_by, page)
+            if not items:
+                return
 
             for item in items:
                 if self.__stop:
@@ -91,16 +96,23 @@ class Parser:
                     return
 
                 with get(item['url']) as r:
+                    if r.status_code != 200:
+                        print(f'Поиск прерван со стороны сервера {r.status_code}. Файл будет закрыт.')
+                        return
+
                     vacancy = Vacancy(r.json())
 
                     row = next(counter)
-                    worker.progressStatus.emit(int(100 * row / min(found, 100 * pages_number)))
+                    worker.progressStatus.emit(int(100 * row / min(found, 100 * pages)))
                     worker.progressText.emit(vacancy.name[:70])
 
-                    sheet.write_all_data(vacancy, row + 1)
+                    sheet.write_all_data(vacancy, row=row + 1)
                     self.collect_salary_data(vacancy)
                     self.collect_skills_data(vacancy)
 
                 sleep(0.35)
-            if page not in (found // 100, pages_number - 1):
+            if page not in (found // 100, pages - 1):
                 sleep(5)
+
+
+parser = Parser()

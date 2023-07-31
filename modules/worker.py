@@ -1,7 +1,7 @@
 from os import path, mkdir
 from PyQt5.QtCore import QThread, pyqtSignal
 from .excel import CustomWorkbook, CustomWorksheet
-from .parser import Parser
+from .parser import parser
 
 
 class FileWorker(QThread):
@@ -19,21 +19,20 @@ class FileWorker(QThread):
     progressText = pyqtSignal(str)
     taskFinished = pyqtSignal()
 
-    def __init__(self, request: str, region: str, area_id: int, pages: int):
-        """
-        Конструктор класса FileWorker.
-
-        :param request: Текстовый запрос пользователя.
-        :param region: Город (регион) пользователя.
-        :param area_id: id города (региона) пользователя.
-        :param pages: Количество анализируемых страниц.
-        """
+    def __init__(self, options: dict):
+        """Конструктор класса FileWorker."""
 
         super().__init__()
-        self.my_request = request
-        self.my_region = region
-        self.area_id = area_id
-        self.pages_number = pages
+        self.request = None
+        self.region = None
+        self.pages = None
+        self.area_id = None
+        self.period = None
+        self.order_by = None
+        self.only_with_salary = None
+
+        for attr_name, value in options.items():
+            self.__setattr__(attr_name, value)
 
     @staticmethod
     def get_path() -> str:
@@ -56,7 +55,7 @@ class FileWorker(QThread):
         """
 
         directory = self.get_path()
-        return CustomWorkbook(directory, self.my_request, self.my_region)
+        return CustomWorkbook(directory, self.request, self.region)
 
     @staticmethod
     def create_sheets(workbook: CustomWorkbook) -> tuple:
@@ -75,7 +74,7 @@ class FileWorker(QThread):
         return ws_1, ws_2, ws_3, ws_4
 
     @staticmethod
-    def hide_data_sheets(*sheets: tuple[CustomWorksheet]):
+    def hide_data_sheets(*sheets: CustomWorksheet):
         """
         Метод скрывает листы с данными в Excel файле, так как они будут представлены на диаграммах.
 
@@ -101,19 +100,24 @@ class FileWorker(QThread):
         table.freeze_panes(1, 0)
         table.cut_unused_cells(col=9)
 
-    def write_data(self, area_id: int, table: CustomWorksheet, *others: tuple[CustomWorksheet]):
+    def write_data(self, table: CustomWorksheet, *others: CustomWorksheet):
         """
         Заполняет все таблицы собранными данными.
 
-        :param area_id: Идентификатор города (региона).
         :param table: Объект кастомного листа (главная таблица).
         :param others: Дополнительные листы, в которые будут записаны данные (навыки, зарплата, удаленка).
         """
 
-        parser_obj = Parser()
-        parser_obj.parse_page(self.my_request, area_id, self.pages_number, table, worker=self)
+        parser.parse_page(self.request,
+                          self.area_id,
+                          self.pages,
+                          self.period,
+                          self.only_with_salary,
+                          self.order_by,
+                          table,
+                          worker=self)
 
-        salaries, skills = parser_obj.get_collected_data()
+        salaries, skills = parser.get_collected_data()
 
         others[0].write_skills(skills)
         others[1].write_salary_statistics(salaries)
@@ -139,7 +143,7 @@ class FileWorker(QThread):
         """
 
         workbook.close()
-        print(f'Файл {self.my_request} закрыт.')
+        print(f'Файл {self.request} закрыт.')
         self.taskFinished.emit()
 
     def run(self):
@@ -147,13 +151,13 @@ class FileWorker(QThread):
 
         workbook = self.create_workbook()
 
-        table, skills, salary, remote = self.create_sheets(workbook)
+        main_table, *charts = self.create_sheets(workbook)
 
-        self.hide_data_sheets(skills, salary, remote)
+        self.hide_data_sheets(*charts)
 
-        self.format_main_table(table, formats_from=workbook)
+        self.format_main_table(main_table, formats_from=workbook)
 
-        self.write_data(self.area_id, table, skills, salary, remote)
+        self.write_data(main_table, *charts)
 
         self.create_charts(workbook)
 
