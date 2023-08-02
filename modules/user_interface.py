@@ -1,8 +1,9 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (QLineEdit, QCompleter,
-                             QPushButton, QStyle, QSlider, QLabel, QProgressBar, QMainWindow, QCheckBox, QComboBox)
+                             QPushButton, QSlider, QLabel, QProgressBar, QMainWindow, QCheckBox, QComboBox)
 
+from images import icon
 from .api import areas_dict, get_my_area_id, get_page, vacancy_search_order
 from .parser import parser
 from .worker import FileWorker
@@ -15,23 +16,23 @@ class MainWindow(QMainWindow):
         self.areas_dict = areas_dict
 
         # Название программы и размеры окна
-        self.setWindowTitle('hh_insights')
+        self.setWindowTitle('JobInsights (RU)')
+        self.setWindowIcon(icon('pie_chart.png'))
         self.setFixedSize(500, 350)
 
         # Окно ввода вакансии
-        self.job_field = QLineEdit('Python разработчик', self)
+        self.job_field = QLineEdit(self)
+        self.job_field.setPlaceholderText('Профессия')
         self.job_field.setGeometry(10, 30, 380, 30)
         self.job_field.setFont(QFont("Arial", 14))
 
         # Кнопка начать поиск
-        self.search_button = QPushButton(self)
+        self.search_button = QPushButton(icon('search.png'), '', self)
         self.search_button.setGeometry(400, 30, 45, 30)
-        self.search_button.setIcon(self.style().standardIcon(getattr(QStyle, 'SP_FileDialogContentsView')))
 
         # Кнопка СТОП
-        self.stop_button = QPushButton(self)
+        self.stop_button = QPushButton(icon('cancel.png'), '', self)
         self.stop_button.setGeometry(445, 30, 45, 30)
-        self.stop_button.setIcon(self.style().standardIcon(getattr(QStyle, 'SP_MessageBoxCritical')))
         self.stop_button.setEnabled(False)
 
         # Надпись Регион:
@@ -49,7 +50,7 @@ class MainWindow(QMainWindow):
 
         # Слайдер и количество анализируемых страниц
         self.pages_slider = QSlider(Qt.Orientation.Horizontal, self)
-        self.pages_slider.setGeometry(10, 260, 180, 20)
+        self.pages_slider.setGeometry(10, 260, 250, 20)
         self.pages_slider.setMinimum(1)
         self.pages_slider.setMaximum(20)
         self.pages_slider.setValue(10)
