@@ -1,10 +1,12 @@
+# /* coding: UTF-8 */
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (QLineEdit, QCompleter,
                              QPushButton, QSlider, QLabel, QProgressBar, QMainWindow, QCheckBox, QComboBox)
 
 from images import icon
-from .api import areas_dict, get_my_area_id, get_page, vacancy_search_order
+from .api import areas, get_my_area_id, get_page, vacancy_search_order
 from .parser import parser
 from .worker import FileWorker
 
@@ -13,7 +15,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.worker = None
-        self.areas_dict = areas_dict
+        self.areas_dict = areas
 
         # Название программы и размеры окна
         self.setWindowTitle('JobInsights (RU)')
@@ -41,7 +43,7 @@ class MainWindow(QMainWindow):
 
         # Выбор региона
         self.area_box = QLineEdit(self)
-        self.area_box.setPlaceholderText('Россия')
+        self.area_box.setPlaceholderText('Все регионы')
         self.area_box.setGeometry(60, 80, 200, 20)
         suggestions = self.areas_dict.values()  # Тут подхватываются города из инициализатора API hh.ru
         completer = QCompleter(suggestions, self.area_box)
@@ -171,7 +173,7 @@ class MainWindow(QMainWindow):
         """Запускает процесс поиска вакансий и создания книги Excel."""
 
         request = self.job_field.text()
-        region = 'Россия' if not self.area_box.text() else self.area_box.text()
+        region = self.area_box.text()
         area_id = get_my_area_id(region, self.areas_dict)
         pages = self.pages_slider.value()
         period = self.period_edit()

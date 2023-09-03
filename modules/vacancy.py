@@ -1,3 +1,5 @@
+# /* coding: UTF-8 */
+
 from datetime import datetime, date
 from re import search
 from .api import rates

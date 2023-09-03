@@ -1,3 +1,5 @@
+# /* coding: UTF-8 */
+
 from requests import get
 
 
@@ -75,7 +77,7 @@ def init_areas_dict() -> dict[str, str]:
     with get('https://api.hh.ru/areas') as r:
         json_obj = r.json()
 
-    areas = {}  # Примечание! Сбор данных осуществляется только по территории РФ.
+    areas = {}  # Примечание! Сбор данных осуществляется только по территории РФ (из-за расчётов НДФЛ.)
     for country in filter(lambda item: item['name'] == 'Россия', json_obj):
         areas[country['id']] = country['name']
         for region in country['areas']:
@@ -86,5 +88,5 @@ def init_areas_dict() -> dict[str, str]:
 
 
 rates = get_rates()
-areas_dict = init_areas_dict()
+areas = init_areas_dict()
 vacancy_search_order = get_vacancy_search_order()

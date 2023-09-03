@@ -1,3 +1,5 @@
+# /* coding: UTF-8 */
+
 from string import ascii_uppercase
 from xlsxwriter import Workbook
 from statistics import mean, median, mode
@@ -16,9 +18,9 @@ class CustomWorkbook(Workbook):
         :param region: город (регион) пользователя.
         """
 
-        super().__init__(rf'{f_path}{request} ({region}).xlsx', {'constant_memory': True})
         self.request = request
         self.region = region
+        super().__init__(rf'{f_path}{request} ({self.region}).xlsx', {'constant_memory': True})
 
     def make_cells_formats(self):
         """

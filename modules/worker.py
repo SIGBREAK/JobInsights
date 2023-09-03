@@ -1,7 +1,10 @@
+# /* coding: UTF-8 */
+
 from os import path, mkdir
 from PyQt5.QtCore import QThread, pyqtSignal
 from .excel import CustomWorkbook, CustomWorksheet
 from .parser import parser
+from .api import areas
 
 
 class FileWorker(QThread):
@@ -34,6 +37,11 @@ class FileWorker(QThread):
         for attr_name, value in options.items():
             self.__setattr__(attr_name, value)
 
+    def __check_region(self):
+        """Подпись для файла Excel, если региона нет в JSON'e c HeadHunter, то поиск осуществляется везде."""
+        if self.region not in areas.values():
+            self.region = 'Все регионы'
+
     @staticmethod
     def get_path() -> str:
         """
@@ -55,6 +63,7 @@ class FileWorker(QThread):
         """
 
         directory = self.get_path()
+        self.__check_region()
         return CustomWorkbook(directory, self.request, self.region)
 
     @staticmethod

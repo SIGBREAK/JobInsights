@@ -1,3 +1,5 @@
+# /* coding: UTF-8 */
+
 from time import sleep
 from requests import get
 from statistics import mean
@@ -110,7 +112,7 @@ class Parser:
                     self.collect_salary_data(vacancy)
                     self.collect_skills_data(vacancy)
 
-                sleep(0.35)
+                sleep(0.5)  # Пока что парсер синхронный, поэтому блочим обработчик событий на 0.5 сек каждую итерацию.
             if page not in (found // 100, pages - 1):
                 sleep(5)
 

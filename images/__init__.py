@@ -1,3 +1,5 @@
+# /* coding: UTF-8 */
+
 from os import path
 from PyQt5.QtGui import QIcon
 
