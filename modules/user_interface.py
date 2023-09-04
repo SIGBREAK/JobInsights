@@ -18,7 +18,7 @@ class MainWindow(QMainWindow):
         self.areas_dict = areas
 
         # Название программы и размеры окна
-        self.setWindowTitle('JobInsights (RU)')
+        self.setWindowTitle('Job Insights')
         self.setWindowIcon(icon('pie_chart.png'))
         self.setFixedSize(500, 350)
 

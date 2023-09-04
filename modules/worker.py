@@ -1,5 +1,5 @@
 # /* coding: UTF-8 */
-
+import os
 from os import path, mkdir
 from PyQt5.QtCore import QThread, pyqtSignal
 from .excel import CustomWorkbook, CustomWorksheet
@@ -49,10 +49,10 @@ class FileWorker(QThread):
 
         :return: Путь до директории с файлами.
         """
-
-        directory = r'../Мои запросы/'
-        if not path.exists(directory):
-            mkdir(directory)
+        desktop_path = os.path.expanduser("~/Desktop")
+        directory = os.path.join(desktop_path, "Мои запросы")
+        if not os.path.exists(directory):
+            os.mkdir(directory)
         return directory
 
     def create_workbook(self) -> CustomWorkbook:

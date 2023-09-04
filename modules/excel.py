@@ -20,7 +20,7 @@ class CustomWorkbook(Workbook):
 
         self.request = request
         self.region = region
-        super().__init__(rf'{f_path}{request} ({self.region}).xlsx', {'constant_memory': True})
+        super().__init__(rf'{f_path}/{request} ({self.region}).xlsx', {'constant_memory': True})
 
     def make_cells_formats(self):
         """
