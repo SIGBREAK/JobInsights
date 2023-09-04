@@ -66,27 +66,38 @@ def get_page(request: str, area_id: int, period,
         return json_object['items'], json_object['found']
 
 
-def init_areas_dict() -> dict[str, str]:
+def init_areas():
     """
     Функция собирает актуальные данные о городах и регионах {id: название},
     что позволяет не привязываться к id, которые могут быть изменены в API hh.ru.
 
-    :return: словарь городов (регионов) {id: название}.
+    :return:
+            Словарь городов (регионов) {id: название},
+            Множество id городов и областей, относящихся только к РФ (для расчёта чистой ЗП).
     """
 
     with get('https://api.hh.ru/areas') as r:
         json_obj = r.json()
 
-    areas = {}  # Примечание! Сбор данных осуществляется только по территории РФ (из-за расчётов НДФЛ.)
-    for country in filter(lambda item: item['name'] == 'Россия', json_obj):
-        areas[country['id']] = country['name']
-        for region in country['areas']:
-            areas[region['id']] = region['name']
-            for area in region['areas']:
-                areas[area['id']] = area['name']
-    return areas
+    def get_areas(locations, in_russia=False):
+        areas = {}
+
+        if in_russia:
+            locations = filter(lambda item: item['name'] == 'Россия', locations)
+
+        for loc in locations:
+            areas[loc['id']] = loc['name']
+            if loc['areas']:
+                areas.update(get_areas(loc['areas']))
+
+        return areas
+
+    all_locations = get_areas(json_obj)
+    russian_areas = set(get_areas(json_obj, in_russia=True))
+
+    return all_locations, russian_areas
 
 
 rates = get_rates()
-areas = init_areas_dict()
+areas, russian_areas = init_areas()
 vacancy_search_order = get_vacancy_search_order()

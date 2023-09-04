@@ -198,14 +198,25 @@ class CustomWorksheet:
 
     def add_headlines(self, headings_format: dict):
         """
-        Метод для добавления заголовков таблицы.
+        Метод для добавления заголовков таблицы и комментарием к ним.
 
         :param headings_format: Форматы заголовков.
         """
 
-        headlines = ['Должность', 'ЗП (на руки) от, ₽', 'ЗП (на руки) до, ₽', 'Минимум опыта\nлет ',
-                     'Удалёнка', 'Опубликовано\n(дней)', 'Создано\n(дней)', 'Компания', 'Подробнее']
+        headlines = ['Должность', 'Зарплата от, ₽', 'Зарплата до, ₽', 'Минимум лет опыта',
+                     'Удалёнка', 'Опубликовано\n(дней)', 'Создано\n(дней)', 'Работодатель', 'Подробнее']
+
         self.write_row('A1', headlines, headings_format)
+
+        comment_salary = ('Размер ЗП пересчитывается в RUB по актуальным курсам валют. '
+                          'Только для вакансий из РФ учитывается НДФЛ 13%.')
+        comment_updated = 'Прошло дней с последнего обновления вакансии на платформе.'
+        comment_added = 'Прошло дней с даты создания вакансии.'
+
+        self.write_comment('B1', comment_salary)
+        self.write_comment('C1', comment_salary)
+        self.write_comment('F1', comment_updated)
+        self.write_comment('G1', comment_added)
 
     def add_conditional_formatting(self):
         """Метод для добавления условного форматирования ячеек."""
@@ -308,4 +319,4 @@ class CustomWorksheet:
         """
 
         # Примечание! Опасное использование срезов в случае создания новых локальных атрибутов в объектах Vacancy.
-        self.write_row(f'A{row}', list(vacancy.__dict__.values())[1:-1])
+        self.write_row(f'A{row}', list(vacancy.__dict__.values())[2:-1])

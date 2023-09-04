@@ -2,7 +2,7 @@
 
 from datetime import datetime, date
 from re import search
-from .api import rates
+from .api import rates, russian_areas
 
 
 class Vacancy:
@@ -17,6 +17,8 @@ class Vacancy:
 
         self.row = Vacancy.max_row
         Vacancy.max_row += 1
+
+        self.area_id = job['area']['id']
 
         self.name = job['name']
 
@@ -36,8 +38,7 @@ class Vacancy:
 
         self.skills = [skill for dct in job['key_skills'] for skill in dct.values()]
 
-    @classmethod
-    def __get_salary_range(cls, salary: dict) -> tuple:
+    def __get_salary_range(self, salary: dict) -> tuple:
         """
         Внутренний метод для расчета диапазона заработной платы (чистыми на руки).
 
@@ -48,8 +49,8 @@ class Vacancy:
         if not salary:
             return '', ''
 
-        k = 1               # Примечание! Учитывается ставка НДФЛ действительная только в РФ (13%).
-        if salary['gross']:
+        k = 1               # Расчёт чистой ЗП проводится только для РФ по НДФЛ 13%.
+        if salary['gross'] and self.area_id in russian_areas:
             k = 0.87
 
         bottom, top, currency = salary['from'], salary['to'], salary['currency']

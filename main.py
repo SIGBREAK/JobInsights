@@ -1,9 +1,9 @@
 # /* coding: UTF-8 */
 
-import sys
-
 from PyQt5.QtWidgets import QApplication
-from modules import MainWindow
+from modules.user_interface import MainWindow
+
+import sys
 
 
 def main():

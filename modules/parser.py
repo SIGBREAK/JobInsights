@@ -62,6 +62,10 @@ class Parser:
 
         return self.salaries_list, self.skills_list
 
+    def clear_collected_data(self):
+        self.salaries_list.clear()
+        self.skills_list.clear()
+
     def parse_page(self, request: str, area_id: int, pages: int,
                    period: int,  only_with_salary: bool, order_by: str, sheet, worker) -> None:
         """
@@ -85,6 +89,7 @@ class Parser:
         :return: None.
         """
 
+        self.clear_collected_data()
         counter = count(1)
 
         for page in range(pages):
@@ -99,7 +104,7 @@ class Parser:
 
                 with get(item['url']) as r:
                     if r.status_code != 200:
-                        print(f'Поиск прерван со стороны сервера {r.status_code}. Файл будет закрыт.')
+                        print(f'Поиск прерван. Статус код: {r.status_code}. Файл будет закрыт.')
                         return
 
                     vacancy = Vacancy(r.json())
@@ -112,7 +117,7 @@ class Parser:
                     self.collect_salary_data(vacancy)
                     self.collect_skills_data(vacancy)
 
-                sleep(0.5)  # Пока что парсер синхронный, поэтому блочим обработчик событий на 0.5 сек каждую итерацию.
+                sleep(0.5)  # Пока что парсер синхронный, блочим обработчик событий на 0.5 сек каждую итерацию.
             if page not in (found // 100, pages - 1):
                 sleep(5)
 
