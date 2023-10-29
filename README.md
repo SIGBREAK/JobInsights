@@ -43,7 +43,7 @@
 3. pip install -r requirements.txt
 4. Запуск через ***main.py***
 
-! Или скачать репозиторий архивом и воспользоваться portable.
+! Или скачать репозиторий архивом и воспользоваться <a href="https://www.dropbox.com/scl/fo/hvcmv3b0bpvjpigf0cabo/h?rlkey=m92yls8ab7wjh5jyp2kbfkos2&dl=0">portable</a>.
 
 ## Системные требования
 Проверено на конфигурации: Win 10, Python 3.10, MS Office 16.
